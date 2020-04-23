@@ -1,0 +1,22 @@
+{
+    "communities": [
+        {
+            "id": "1",
+            "img": "/image/profile/community1.png",
+            "name": "School",
+            "title": "Our school joins on this trip. So we will support all attributes."
+        },
+        {
+            "id": "2",
+            "img": "/image/profile/community2.png",
+            "name": "Bank",
+            "title": "Our bank is very popular bank."
+        },
+        {
+            "id": "3",
+            "img": "/image/profile/community3.png",
+            "name": "Injaz",
+            "title": "Wellcome our Injaz. You will get useful details for you when you join us!!!"
+        }
+    ]
+}

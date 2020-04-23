@@ -1,0 +1,97 @@
+.menu-area {
+	background: #f0f4f3;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	padding: 10vh 30px;
+	z-index: 2;
+}
+.common-btns {
+	cursor: pointer;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	margin: auto;
+	margin-bottom: 5px;
+	background-position: 50%;
+	background-size: cover;
+	padding: 10px;
+	vertical-align: middle;
+	background-image: -webkit-linear-gradient(#FFFFFF 0%, #FFFFFF 100%);
+    background-image: linear-gradient(#FFFFFF 0%, #FFFFFF 100%);
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.66);
+    /*box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 2px 2px rgba(0, 0, 0, 0.19);*/
+    box-shadow: 0 0 2px grey;
+}
+.user-detail {
+	position: absolute;
+    top: 40px;
+    right: 18vw;
+    font-size: 16px;
+    font-weight: unset ! important;
+}
+.user-detail strong {
+	font-weight: 600;
+}
+.common-btns:active {
+    background-image: -webkit-linear-gradient(#FFFFFF 0%, #efe8e8 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 2px rgba(0, 0, 0, 0.19);
+    border-bottom: none;
+}
+.v-icons {
+	width: 30px !important;
+	height: 30px !important;
+	color: #eb5557;
+	margin-top: 5px;
+}
+.v-icons-wallet {
+	width: 20px !important;
+	height: 20px !important;
+	color: #D5E9E8;
+}
+.v-icons-contribution {
+	color: #1c8983;
+	width: 20px !important;
+	height: 20px;
+	margin-top: 15px;
+}
+.v-icons-profile-edit {
+	width: 18px !important;
+	height: 18px;
+	color: #c3c5c5;
+	margin-left: 5px;
+	margin-top: -3px;
+}
+.v-icon-camera {
+	width: 25px !important;
+	height: 25px;
+	color: white;
+}
+.v-icons-message {
+	width: 10px !important;
+	height: 10px;
+	color: #c5c6cb;
+}
+.v-icon-cash {
+	font-size: 25px;
+	color: #abe5c4;
+}
+.circle-icon {
+	background: white;
+	border-radius: 50%;
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 0 10px;
+	left: 20px;
+	bottom: -10px;
+	font-size: 15px;
+	color: #1C8983;
+}
+.settings-v-icon {
+	font-size: 20px;
+	color: #adadad;
+}

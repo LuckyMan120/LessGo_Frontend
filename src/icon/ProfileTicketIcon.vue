@@ -1,0 +1,263 @@
+<template>
+    <div :style="activeFlag?'margin-top: -20px; margin-left: -15px': 'margin-left: -15px'" class="profile-ticket">
+        <svg class="shadow" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="104%" :height="activeFlag?(reviewFlag?'190px': '240px'): '270px'" viewBox="0 0 418 268.001" preserveAspectRatio="none">
+            <defs>
+                <filter id="card_back" x="0" y="0" width="418" height="268.001" filterUnits="userSpaceOnUse" >
+                    <feOffset dy="10" input="SourceAlpha"/>
+                    <feGaussianBlur stdDeviation="10" result="blur"/>
+                    <feFlood flood-color="#236262" flood-opacity="0.161"/>
+                    <feComposite operator="in" in2="blur"/>
+                    <feComposite in="SourceGraphic"/>
+                </filter>
+            </defs>
+            <g transform="matrix(1, 0, 0, 1, 0, 0)" filter="url(#card_back)">
+                <path id="card_back-2" data-name="card back" d="M1471.025-566.4H1267a14.9,14.9,0,0,1-10.607-4.393A14.9,14.9,0,0,1,1252-581.405v-178a14.9,14.9,0,0,1,4.393-10.606A14.9,14.9,0,0,1,1267-774.405h204.011c-.007.129-.011.265-.011.405a7.008,7.008,0,0,0,7,7,7.008,7.008,0,0,0,7-7c0-.135,0-.271-.011-.405H1595a14.9,14.9,0,0,1,10.607,4.393A14.9,14.9,0,0,1,1610-759.406v178a14.9,14.9,0,0,1-4.393,10.607A14.9,14.9,0,0,1,1595-566.405H1484.975c.016-.192.025-.392.025-.595a7.008,7.008,0,0,0-7-7,7.008,7.008,0,0,0-7,7c0,.2.008.4.025.595Z" transform="translate(-1222 799.41)" fill="#fff"/>
+            </g>
+        </svg>
+        <div class="trip-board" :style="(!joinFlag && !activeFlag && !infoFlag && !reviewFlag)?'top: 15%': ''">
+            <!-- left -->
+            <div class="col-xs-16" style="padding-right: 20px !important">
+                <div style="display: flex;">
+                    <div class="img-circle" v-imgSrc:src="driver_img"></div>
+                    <!-- user detail -->
+                    <div class="trip-user-detail">
+                        <h3>{{ this.driver_name }}</h3>
+                        <div v-for="num in redRating" style="float: left; margin-right: 5px;">
+                            <ratingStarIcon :size="10" :color="'#e65a5b'" />
+                        </div>
+                        <div v-if="!no_review" v-for="num in greyRating" style="float: left; margin-right: 5px;">
+                            <ratingStarIcon :size="10" />
+                        </div>
+                        <div v-if="no_review">
+                            <span>No Reviews</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- from_town, to_town, car and for -->
+                <div class="fromTo">
+                    <div v-if="!activeFlag">
+                        <carIcon :size="11" :color="'#b7b5b5'" />
+                        <span>
+                            {{ this.car_type }}
+                        </span>
+                    </div>
+                    <div>
+                        <fromIcon :size="11" :color="'#b7b5b5'" />
+                        <span>
+                            {{ this.from_town }}
+                        </span>
+                    </div>
+                    <div>
+                        <toIcon :size="11" :color="'#b7b5b5'" />
+                        <span style="color: #828080">
+                            {{ this.to_town }}
+                        </span>
+                    </div>
+                    <div v-if="manager_type === 'male' && !activeFlag">
+                        <maleIcon :size="11" :color="'#389792'" />
+                        <span class="manager-type">
+                            Males Only
+                        </span>
+                    </div>
+                    <div v-if="manager_type === 'female' && !activeFlag">
+                        <femaleIcon :size="11" :color="'#389792'" />
+                        <span class="manager-type">
+                            Female
+                        </span>
+                    </div>
+                </div>
+
+                <!-- trip finish btn -->
+                <button v-if="activeFlag && !reviewFlag" class="finish-btn" @click="finishTrip">Finish</button>
+            </div>
+            <!-- stick -->
+            <div :style="activeFlag?(reviewFlag?'height: 124px; top: 10px': 'height: 153px'): ''" class="divide-stick"></div>
+
+            <!-- right -->
+            <div class="col-xs-8 right-side">
+                <span v-if="!activeFlag" class="in-open">Open</span>
+                <span v-if="activeFlag" class="report-span">Report/Help</span>
+                <div class="dots-icon" style="display: inline-block;">
+                    <dotsIcon :size="10" :color="'#b2b2b4'" />
+                </div>
+                <div :style="activeFlag?'margin-top: 60px': ''" class="day-month">
+                    <calenderIcon :size="15" :color="'#565960'" />
+                    <span>{{ rideDay }}</span>
+                    <span>{{ rideMonth }}</span>
+                </div>
+                <div>
+                    <clockIcon :size="15" :color="'#565960'" />
+                    <span>{{ rideTime }}</span>
+                </div>
+
+                <!-- per seat -->
+                <div v-if="!activeFlag" class="per-seat">
+                    <h4>
+                        {{ this.seat_price }}&nbsp;JD
+                    </h4>
+                    <p>
+                        Per Seat
+                    </p>
+                </div>
+                <div v-if="!activeFlag" class="seat-icon" :style="(!joinFlag && !activeFlag && !infoFlag && !reviewFlag)?'bottom: 40px': ''">
+                    <seatIcon />
+                    <span class="seat-num">
+                        {{ this.used_seat }}
+                    </span>
+                </div>
+                <button v-if="infoFlag" @click="moreDetail('info')" class="info-btn">
+                    <alignInfoIcon :size="15" :color="'#a8adac'" />
+                    <span>Info</span>
+                </button>
+                <button v-if="joinFlag" @click="moreDetail('join')" class="info-btn">
+                    <carIcon :size="15" :color="'#a8adac'" />
+                    <span>Join</span>
+                </button>
+                <button v-if="activeFlag && !reviewFlag" class="Track-btn">Track</button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+import moment from 'moment';
+import { mapActions } from 'vuex';
+
+// import components for this
+import ratingStarIcon from './RatingStarIcon.vue';
+import fromIcon from './FromIcon.vue';
+import toIcon from './ToIcon.vue';
+import calenderIcon from './CalenderIcon.vue';
+import clockIcon from './ClockIcon.vue';
+import dotsIcon from './DotsIcon.vue';
+import carIcon from './CarIcon';
+import maleIcon from './MaleIcon';
+import femaleIcon from './FemaleIcon';
+import seatIcon from './SeatIcon';
+import alignInfoIcon from './AlignInfoIcon';
+
+let totalCount = 5;
+let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export default {
+    name: 'profileTicketIcon',
+    data () {
+        return {
+            redRating: [],
+            greyRating: [],
+            rideMonth: '',
+            rideDay: '',
+            rideTime: '6:00 PM',
+            driver_img: '',
+            driver_name: '',
+            from_town: '',
+            to_town: '',
+            no_review: false,
+            car_type: '',
+            manager_type: '',
+            seat_price: '',
+            used_seat: null,
+            driverData: null
+        }
+    },
+    props: {
+        data: {
+            type: Object,
+            required: false,
+            default: null
+        },
+        joinFlag: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        infoFlag: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        activeFlag: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
+        reviewFlag: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    },
+    computed: {
+        initData: function () {
+            this.redRating = [];
+            this.greyRating = [];
+            this.no_review = false;
+            let tripData = this.data;
+            console.log('profileTicket', this.data);
+            // rating count
+            if (tripData.driver.rating !== 0) {
+                for (let i = 0; i < tripData.driver.rating; i++) {
+                    this.redRating.push(i);
+                }
+
+                for (let j = 0; j < (totalCount - tripData.driver.rating); j++) {
+                    this.greyRating.push(j);
+                }
+            } else {
+                this.no_review = true;
+            }
+
+            // month and day
+            this.rideMonth = months[moment(tripData.trips.created_at).toDate().getMonth()];
+            this.rideDay = moment(tripData.trips.created_at).toDate().getDate() + 1;
+
+            // trip details
+            this.driver_name = tripData.driver.driver_name;
+            this.driver_img = tripData.driver.driver_avatar;
+            this.from_town = tripData.trips.from_town;
+            this.to_town = tripData.trips.to_town;
+            this.car_type = tripData.trips.car_type;
+            this.manager_type = tripData.trips.for;
+            this.seat_price = tripData.trips.seat_price;
+            this.used_seat = tripData.trips.used_seats;
+            this.driverData = tripData;
+        }
+    },
+    methods: {
+        ...mapActions({
+            setSelectedTrip: 'trips/setSelectedTrip'
+        }),
+        moreDetail: function (title) {
+            if (title === 'info') {
+                let name = this.driverData.driver.driver_name;
+                let newName = name.replace(/ /gi, '');
+                this.setSelectedTrip(this.driverData);
+                this.$emit('driver-detail', newName);    
+            } else {
+                this.$emit('join');
+            }
+        },
+        finishTrip: function () {
+            this.$emit('finish-trip');
+        }
+    },
+    watch: {
+        initData: function () {
+            console.log('data');
+        }
+    },
+    components: {
+        ratingStarIcon,
+        fromIcon,
+        toIcon,
+        calenderIcon,
+        clockIcon,
+        dotsIcon,
+        carIcon,
+        maleIcon,
+        femaleIcon,
+        seatIcon,
+        alignInfoIcon
+    }
+}
+</script>
