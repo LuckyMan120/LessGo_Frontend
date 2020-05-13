@@ -23,11 +23,13 @@ export default {
         return {
             bk_down_Img: process.env.ROUTE_BASE + 'static/img/Group839.svg',
             bk_up_Img: process.env.ROUTE_BASE + 'static/img/welcome.png'
-        }
+        };
     },
     methods: {
         goCommunity: function () {
-            this.$router.push({name: 'communities'});
+            let status = 'signup';
+            console.log('status', status);
+            this.$router.push({name: 'communities', params: {status}});
         }
     }
 };

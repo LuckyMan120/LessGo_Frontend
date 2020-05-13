@@ -11,7 +11,7 @@
                 To be albe to post rides, please provide us with some info about your car
             </span>
             <!-- car info -->
-            <div style="margin: 30px 0; display: flex;">
+            <div class="identification" style="margin: 30px 0; display: flex;">
                 <!-- car image -->
                 <div @click="updateData('car')" class="section-part" title="Input your Car">
                     <img v-for="part in styles" v-bind:style="{'transform': part.transform,
@@ -36,7 +36,7 @@
             </div>
 
             <!-- input car type and user id -->
-            <div>
+            <div class="car-info">
                 <div class="common-input">
                     <carIcon :size="15" :color="fillcolor" style="margin-right: 15px" />
                     <input ref="car_type" type="text" name="car-model" placeholder="Car model" v-model="carType" />
@@ -50,9 +50,8 @@
             </div>
 
             <!-- go next step -->
-            <button class="offer-ride" style="margin-top: 20px; margin-right: 0;" @click="offerRide">
+            <button class="offer-ride" style="margin-top: 50px; margin-right: 0;" @click="offerRide">
                 <carIcon :size="20" :color="'#D5E9E8'" style="margin-top: -3px;" />
-                <carPlusIcon :size="15" />
                 <span style="color: white">Offer ride</span>
             </button>
         </div>
@@ -68,7 +67,6 @@ import dialogs from '../../services/dialogs.js';
 /* import components for this */
 import closeIcon from '../../icon/CloseIcon';
 import carIcon from '../../icon/CarIcon';
-import carPlusIcon from '../../icon/CarPlusIcon'
 import userCardIcon from '../../icon/UserCardIcon';
 import plateIcon from '../../icon/PlateIcon';
 import offerIcon from '../../icon/OfferIcon';
@@ -183,8 +181,7 @@ export default {
         carIcon,
         userCardIcon,
         plateIcon,
-        offerIcon,
-        carPlusIcon
+        offerIcon
     }
 };
 </script>

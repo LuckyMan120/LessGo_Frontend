@@ -1,5 +1,5 @@
 <template>
-    <div v-if="(data && data.length > 0) || !hideOnEmpty">
+    <div style="margin-top: 30px" v-if="(data && data.length > 0) || !hideOnEmpty">
         <!-- <slot name="title" ></slot> -->
         <template v-if="data != null">
             <slot v-if="data.length > 0">

@@ -8,7 +8,7 @@
                 </div>
                 <p slot="no-data" class="alert alert-warning"  role="alert">There are no Requests to answer</p>
                 <p slot="loading" class="alert alert-info" role="alert">
-                    <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                    <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                     Loading...
                 </p>
             </Loading>
@@ -46,7 +46,7 @@
                 </div>
                 <p slot="no-data" class="alert alert-warning"  role="alert">No pending Ratings</p>
                 <p slot="loading" class="alert alert-info" role="alert">
-                    <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                    <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                     Loading ratings ...
                 </p>
             </Loading>
@@ -61,7 +61,7 @@
                 </div>
                 <p slot="no-data" class="alert alert-warning"  role="alert">You Don't have any trips created</p>
                 <p slot="loading" class="alert alert-info" role="alert">
-                    <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                    <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                     Loading trips ...
                 </p>
             </Loading>
@@ -76,7 +76,7 @@
                 </div>
                 <p slot="no-data" class="alert alert-warning"  role="alert">No estas subido a ningún viaje.</p>
                 <p slot="loading" class="alert alert-info" role="alert">
-                    <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                    <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                     Loading trips ...
                 </p>
             </Loading>
@@ -92,7 +92,7 @@
                 </div>
                 <p slot="no-data" class="alert alert-warning"  role="alert">You don't have any subscriptions.</p>
                 <p slot="loading" class="alert alert-info" role="alert">
-                    <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                    <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                     Loading subscriptions ...
                 </p>
             </Loading>
@@ -108,7 +108,7 @@
                 </div>
                 <p slot="no-data" class="alert alert-warning"  role="alert">Do not create any trip</p>
                 <p slot="loading" class="alert alert-info" role="alert">
-                    <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                    <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                     Loading trips ...
                 </p>
             </Loading>
@@ -123,7 +123,7 @@
                 </div>
                 <p slot="no-data" class="alert alert-warning"  role="alert">You have not been on any trip.</p>
                 <p slot="loading" class="alert alert-info" role="alert">
-                    <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                    <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                     Loading trips ...
                 </p>
             </Loading>

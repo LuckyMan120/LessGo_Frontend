@@ -2,7 +2,7 @@
     <div class="date-picker">
         <div v-if="browser" class="form-control picker" :class="focus ? 'input-border' : ''" :style="!calendarFlag?'padding: 0px; border-bottom-color: transparent !important;': ''">
             <DatepickerSystem
-                :clear-button="true"
+                :clear-button="clearFlag"
                 :clear-button-icon="'fa fa-times'"
                 :calendar-button="calendarFlag"
                 :calendar-button-icon="'fa fa-calendar'"
@@ -65,9 +65,11 @@ export default {
     },
     mounted () {
         if (this.value !== '') {
+            console.log('value', this.value);
             this.dateBrowser = moment(this.value).toDate();
             this.dateMobile = this.value;
             this.niceDate = moment(this.value).format('DD/MM/YYYY');
+            console.log('dateBrowser', this.dateBrowser);
         }
     },
 
@@ -133,6 +135,7 @@ export default {
             this.$emit('date_changed', value);
         },
         value: function (value) {
+            console.log('value', value);
             this.dateBrowser = moment(this.value).toDate();
             this.dateMobile = this.value;
             this.niceDate = moment(this.value).format('DD/MM/YYYY');
@@ -162,6 +165,11 @@ export default {
             default: false
         },
         'calendarFlag': {
+            type: Boolean,
+            required: false,
+            default: true
+        },
+        'clearFlag': {
             type: Boolean,
             required: false,
             default: true

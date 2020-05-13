@@ -50,14 +50,60 @@ import { mapActions } from 'vuex';
 
 export default {
     name: 'closeIcon',
-    props: ['size', 'classes'],
+    props: {
+        size: {
+            type: Number,
+            required: false,
+            default: 10
+        },
+        classes: {
+            type: String,
+            required: false,
+            default: ''
+        },
+        title: {
+            type: String,
+            required: false,
+            default: ''
+        },
+        data: {
+            type: Object,
+            required: false,
+            default: null
+        },
+        closeTitle: {
+            type: String,
+            required: false,
+            default: ''
+        }
+    },
     methods: {
         ...mapActions({
             initDetail: 'cars/initDetail'
         }),
         backToUrl: function () {
             this.initDetail();
-            this.$router.push({ name: 'main' });
+            switch (this.title) {
+            case '':
+                this.$router.push({ name: 'main' });
+                break;
+            case 'searchResult':
+                let data = this.data;
+                let status = this.closeTitle;
+                this.$router.push({name: 'searchResult', params: { data: data, status: status }});
+                break;
+            case 'yourTrips':
+                this.$router.push({name: 'your-trips'});
+                break;
+            case 'message':
+                this.$router.push({name: 'messages'});
+                break;
+            case 'chat':
+                this.$router.push({ name: 'conversation-chat', params: { id: this.data.id, status: this.data.status } });
+                break;
+            default:
+                break;
+            }
         }
     }
 };

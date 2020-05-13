@@ -6,7 +6,7 @@ let tripsApi = new TripApi();
 // initial state
 const state = {
     userId: null,
-    driver_trip: null,
+    driver_trip: [],
     passenger_trip: null
 };
 
@@ -18,8 +18,13 @@ const getters = {
 
 // actions
 const actions = {
-    tripAsDriver (store) {
-        return tripsApi.userTrips(state.userId, true).then(response => {
+    // tripAsDriver (store) {
+    //     return tripsApi.userTrips(state.userId, true).then(response => {
+    //         store.commit(types.USERTRIPS_SET_DRIVER_TRIPS, response.data);
+    //     });
+    // },
+    tripAsDriver (store, id) {
+        return tripsApi.userTrips(id, true).then(response => {
             store.commit(types.USERTRIPS_SET_DRIVER_TRIPS, response.data);
         });
     },
@@ -32,21 +37,33 @@ const actions = {
 
     setUserByID (store, id) {
         store.commit(types.USERTRIPS_SET_USER, id);
+    },
+
+    deleteAllTrips (store) {
+        store.commit(types.DELETE_ALL_TRIPS);
     }
 };
 
 // mutations
 const mutations = {
     [types.USERTRIPS_SET_DRIVER_TRIPS] (state, trips) {
-        state.driver_trip = trips;
+        trips.forEach(trip => {
+            state.driver_trip.push(trip);
+        });
     },
+
     [types.USERTRIPS_SET_PASSENGER_TRIPS] (state, trips) {
         state.passenger_trip = trips;
     },
+
     [types.USERTRIPS_SET_USER] (state, id) {
         state.userId = id;
-        state.driver_trip = null;
+        state.driver_trip = [];
         state.passenger_trip = null;
+    },
+
+    [types.DELETE_ALL_TRIPS] (state) {
+        state.driver_trip = [];
     }
 };
 

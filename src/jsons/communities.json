@@ -1,22 +1,18 @@
 {
     "communities": [
         {
-            "id": "1",
-            "img": "/image/profile/community1.png",
-            "name": "School",
-            "title": "Our school joins on this trip. So we will support all attributes."
+            "id": 1,
+            "domain": "@bankaletihad.com",
+            "name": "Bank Al Etihad",
+            "title": "In at iaculis lorem. Praesent tempor diutum tellus ut molesite. Sed sed",
+            "img_url": "static/img/bank.png"
         },
         {
-            "id": "2",
-            "img": "/image/profile/community2.png",
-            "name": "Bank",
-            "title": "Our bank is very popular bank."
-        },
-        {
-            "id": "3",
-            "img": "/image/profile/community3.png",
-            "name": "Injaz",
-            "title": "Wellcome our Injaz. You will get useful details for you when you join us!!!"
+        	"id": 2,
+        	"domain": "@gju.edu.jo",
+        	"name": "German Jordan University",
+        	"title": "In at iaculis lorem. Praesent tempor diutum tellus ut molesite. Sed sed",
+        	"img_url": "static/img/gju.jpg"
         }
     ]
 }

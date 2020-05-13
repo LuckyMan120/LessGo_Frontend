@@ -21,6 +21,19 @@ export default [
         }
     },
     {
+        path: '/forgot-password',
+        name: 'forget-password',
+        beforeEnter: guest,
+        component: require('../components/views/PasswordReset'),
+        meta: {
+            actionbar: {
+                header: {
+                    title: 'Forgot Password'
+                }
+            }
+        }
+    },
+    {
         path: '/welcomeRegister',
         name: 'signUpSuccess',
         beforeEnter: guest,
@@ -49,7 +62,7 @@ export default [
                     buttons: ['clear']
                 }
             }
-        } 
+        }
     },
     {
         path: '/login',
@@ -325,7 +338,7 @@ export default [
                             title: 'Notifications'
                         }
                     }
-                }    
+                }
             },
             {
                 path: 'security',
@@ -353,64 +366,6 @@ export default [
             }
         ]
     },
-    // {
-    //     path: '/setting',
-    //     component: require('../components/views/Settings.vue'),
-    //     beforeEnter: auth,
-    //     children: [
-    //         {
-    //             path: 'profile',
-    //             name: 'profile_update',
-    //             component: require('../components/sections/UpdateProfile.vue'),
-    //             meta: {
-    //                 tab: 'profile',
-    //                 actionbar: {
-    //                     footer: {
-    //                         show: true,
-    //                         active_id: 'profile'
-    //                     },
-    //                     header: {
-    //                         title: 'Edit Profile',
-    //                         buttons: ['clear']
-
-    //                     }
-    //                 }
-    //             }
-    //         },
-    //         {
-    //             path: 'friends',
-    //             name: 'friends_setting',
-    //             component: require('../components/sections/FriendsSetting.vue'),
-    //             meta: {
-    //                 tab: 'friends',
-    //                 actionbar: {
-    //                     footer: {
-    //                         show: true,
-    //                         active_id: 'profile'
-    //                     },
-    //                     header: {
-    //                         title: 'Friends',
-    //                         buttons: ['menu']
-    //                     }
-    //                 }
-    //             }
-    //         },
-    //         {
-    //             path: 'friends/search',
-    //             name: 'friends_search',
-    //             component: require('../components/sections/FriendsRequest.vue'),
-    //             meta: {
-    //                 tab: 'friends',
-    //                 actionbar: {
-    //                     header: {
-    //                         title: ' Friend Requests',
-    //                         buttons: ['back']
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     ]
-    // },
     {
         path: '/conversations',
         name: 'conversations-list',
@@ -569,7 +524,6 @@ export default [
         name: 'communities',
         component: require('../components/views/Community.vue'),
         props: true,
-        beforeEnter: auth,
         meta: {
             actionbar: {
                 header: {
@@ -615,7 +569,7 @@ export default [
     {
         path: '/searchResult',
         name: 'searchResult',
-        component: require('../components/views/searchResult.vue'),
+        component: require('../components/views/SearchResult.vue'),
         props: true,
         beforeEnter: auth,
         meta: {

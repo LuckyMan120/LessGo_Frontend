@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="position: relative;">
         <img :src="bk" class="signIn-bk" />
         <img :src="logo" class="logo-bk" />
         <!-- signin area -->
@@ -18,7 +18,7 @@
             <!-- password -->
             <span>Password</span>
             <div>
-                <input type="password" name="password" placeholder="• • • • • • • •" v-model="password" />
+                <input type="password" name="password" placeholder="• • • • • • • •" v-model="password" @keyup="goLogin" />
             </div>
             <span class="error" v-if="passwordError.state"> {{passwordError.message}} </span>
             <div class="alert alert-info alert-user" role="alert" v-if="showUserNotActiveInfo">
@@ -40,6 +40,9 @@
                     <p>Sign up</p>
                 </button>
             </div>
+
+            <!-- loading gif -->
+            <img v-if="loading_flag" class="loading-signin-img" :src="loading_img" />
         </div>
     </div>
 </template>
@@ -49,7 +52,6 @@ import VuePhoneNumberInput from 'vue-phone-number-input';
 import { mapGetters, mapActions } from 'vuex';
 import spinner from '../Spinner.vue';
 import dialogs from '../../services/dialogs.js';
-import cache from '../../services/cache';
 
 // import components for this
 import downIcon from '../../icon/DownIcon';
@@ -68,6 +70,7 @@ export default {
         return {
             bk: '/static/img/banner.png',
             logo: '/static/img/lessgo_logo_vertical.png',
+            loading_img: process.env.ROUTE_BASE + 'static/svg/loading.gif',
             password: '',
             showUserNotActiveInfo: false,
             login_loading: false,
@@ -77,20 +80,46 @@ export default {
             phoneNumber: '',
             phoneValid: false,
             passwordError: new Error(),
-            phoneError: new Error()
-        }
+            phoneError: new Error(),
+            loading_flag: false
+        };
     },
     computed: {
         ...mapGetters({
             checkLogin: 'auth/checkLogin',
-            isMobile: 'device/isMobile'
+            isMobile: 'device/isMobile',
+            getLocalData: 'auth/getLocalStore'
         })
+    },
+    async mounted () {
+        this.loading_flag = true;
+        await this.getData();
+        console.log('getLocalData', this.getLocalData);
+        await this.getLocalData
+            .then(result => {
+                this.activate(result.user.activation_token).then(response => {
+                    this.loading_flag = false;
+                }).catch(err => {
+                    console.log('err', err);
+                });
+            })
+            .catch(err => {
+                console.log('err', err);
+                this.loading_flag = false;
+            });
     },
     methods: {
         ...mapActions({
-            doLogin: 'auth/login', // map this.add() to this.$store.dispatch('increment')
-            fbLogin: 'cordova/facebookLogin'
+            doLogin: 'auth/login',
+            getData: 'auth/getSignupFromLocal',
+            fbLogin: 'cordova/facebookLogin',
+            activate: 'auth/activate'
         }),
+        goLogin: function (event) {
+            if (event.key === 'Enter') {
+                this.login();
+            }
+        },
         validate: function () {
             let globalError = false;
 
@@ -122,7 +151,7 @@ export default {
             if (!this.fbLoading) {
                 if (this.validate()) {
                     dialogs.message('You must correct or complete some fields to complete your Login.', { duration: 10, state: 'error' });
-                        return;
+                    return;
                 }
                 this.showUserNotActiveInfo = false;
                 this.login_loading = true;
@@ -175,5 +204,5 @@ export default {
         spinner,
         VuePhoneNumberInput
     }
-}
+};
 </script>

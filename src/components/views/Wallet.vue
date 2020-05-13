@@ -26,6 +26,8 @@
                 </div>
             </div>
 
+            <div class="Payment">
+
             <!-- payment part -->
             <h2>Payment methods</h2>
 
@@ -35,7 +37,7 @@
             </div>
             <!-- add payment method -->
             <div class="payment-add">
-                <plusIcon :size="13" :color="'#1C8983'" />
+                <v-icon icon="plus" class="v-icon-plus" />
                 <h3>Add a new payment method</h3>
             </div>
 
@@ -44,18 +46,19 @@
                 <v-icon icon="hand-holding-heart" class="v-icons-wallet" />
                 <h4>Refer a friend</h4>
             </button>
+             </div>
         </div>
     </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import moment from 'moment';
 
 // import components for this
 import circleTime from './CircleTime';
 import closeIcon from '../../icon/CloseIcon';
 import downIcon from '../../icon/DownIcon';
-import plusIcon from '../../icon/PlusIcon';
 import giveIcon from '../../icon/GiveIcon';
 import cashIcon from '../../icon/CashIcon';
 
@@ -74,7 +77,10 @@ export default {
         };
     },
     computed: {
-
+        ...mapGetters({
+            users: 'auth/users',
+            trips: 'userTrips/driverTrip'
+        })
     },
     mounted () {
         let maxValue = this.date.diff(moment(0), 'seconds'); // total seconds
@@ -91,6 +97,8 @@ export default {
                 this.curCoins += 1;
             }
         }, 100);
+        console.log('user', this.users);
+        console.log('trips', this.trips);
     },
     methods: {
         goMarket: function () {
@@ -101,7 +109,6 @@ export default {
         circleTime,
         closeIcon,
         downIcon,
-        plusIcon,
         giveIcon,
         cashIcon
     }

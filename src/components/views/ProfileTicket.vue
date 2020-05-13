@@ -416,13 +416,13 @@ div#infoText {
 </style>
 <script>
 import dialogs from '../../services/dialogs.js';
-import carIcon from '../../icon/carIcon';
-import ringIcon from '../../icon/ringIcon';
-import markerIcon from '../../icon/markerIcon';
-import genderIcon from '../../icon/genderIcon';
-import calenderIcon from '../../icon/calenderIcon';
-import clockIcon from '../../icon/clockIcon';
-import seatIcon from '../../icon/seatIcon';
+import carIcon from '../../icon/CarIcon';
+import ringIcon from '../../icon/RingIcon';
+import markerIcon from '../../icon/MarkerIcon';
+import genderIcon from '../../icon/GenderIcon';
+import calenderIcon from '../../icon/CalenderIcon';
+import clockIcon from '../../icon/ClockIcon';
+import seatIcon from '../../icon/SeatIcon';
 import { mapActions } from 'vuex';
 
 export default{

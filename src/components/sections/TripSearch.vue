@@ -2,7 +2,7 @@
     <div>
         <div class="searchArea-box">
             <div>
-                <fromIcon :size="15" color="#ABE5C4" />
+                <v-icon :icon="['fa', 'bullseye']" class="v-icon-search" />
                 <gmap-autocomplete
                     @place_changed="setFromtownPlace"
                     placeholder="Leaving from"
@@ -10,7 +10,7 @@
                 ></gmap-autocomplete>
             </div>
             <div>
-                <toIcon :size="15" color="#ABE5C4" />
+                <v-icon :icon="['fas', 'map-marker-alt']" class="v-icon-search" />
                 <gmap-autocomplete
                     @place_changed="setTotownPlace"
                     placeholder="Going to"
@@ -22,7 +22,7 @@
             ref="datepicker"
             @onChange="changeDate"
             :minDate="minDate"
-            :format="'DD dd MMMM'"
+            :format="'D dd MMM'"
         />
     </div>
 </template>
@@ -31,8 +31,6 @@
 import moment from 'moment';
 
 // import components for this
-import fromIcon from '../../icon/FromIcon';
-import toIcon from '../../icon/ToIcon';
 import DatePicker from '../DatePicker';
 
 export default {
@@ -103,8 +101,6 @@ export default {
         }
     },
     components: {
-        fromIcon,
-        toIcon,
         DatePicker
     }
 };

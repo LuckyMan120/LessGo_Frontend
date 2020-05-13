@@ -1,30 +1,52 @@
 <template>
-    <div class="conversation_chat" v-if="conversation">
-            <div class="list-group-item">
-                    <div class="conversation_image conversation_image_chat circle-box" v-imgSrc="conversation.image" >
-                        <!-- <button type="button" class="btn btn-icon dropdown-toggle"><i data-v-b2aa1226="" aria-hidden="true" class="fa fa-ellipsis-v"></i> <span class="caret"></span></button> -->
+    <div class="conversation_chat row" v-if="conversation">
+            <div class="fixed-div">
+                <!-- conversation user area -->
+                <div class="title-area" style="padding: 10px 20px;">
+                    <div class="conversation-image">
+                        <div class="img-profile-detail" @click="userProfile" v-imgSrc="conversation.image">
+                        </div>
+                        <div class="circle-icon conversation-circle">
+                            <v-icon icon="car" v-if="status" />
+                            <v-icon icon="user" v-else />
+                        </div>
                     </div>
-                <router-link v-if="conversation.users.length === 2" :to="{ name: 'profile', params: userProfile() }">
-                    <h2 style="z-index:10;"> {{conversation.title}} </h2>
-                </router-link>
-                <h2 v-else> {{conversation.title}}  </h2>
-                <p class="chat_last_connection">
-                    <strong>Last connection: </strong>
-                    <span class="">{{lastConnection | moment("calendar")}}</span>
-                </p>
-            </div>
-            <div id="messagesWrapper" ref="messagesWrapper" class="list-group-item clearfix">
-                <div>
-                    <button id='btn-more' @click="searchMore" v-if="!lastPageConversation" class="btn text-center btn-full-width"> See Older Messages </button>
+                    <div style="margin-left: 20px;">
+                        <h3>{{ conversation.title }}</h3>
+                        <div v-for="num in redRating" style="float: left; margin-right: 5px;">
+                            <v-icon icon="star" class="v-icon-blue" style="color: #1C8983" />
+                        </div>
+                        <div v-if="!no_review" v-for="num in greyRating" style="float: left; margin-right: 5px;">
+                            <v-icon icon="star" class="v-icon-blue" />
+                        </div>
+                        <div v-if="no_review">
+                            <span>No Reviews</span>
+                        </div>
+                    </div>
+                    <closeIcon style="left: 90% !important" :size="12" :classes="'close-message conversation-close'" title="message" />
                 </div>
-                <MessageView v-for="m in messages" :message="m" :user="user" :users="conversation.users"></MessageView>
+
+                <!-- view details -->
+                <div v-if="!lastPageConversation" class="chat-detail">
+                    <span>{{ last_connection_time }}</span>
+                    <p style="cursor: pointer;" @click="searchMore">view details</p>
+                </div>
             </div>
+            
+            <!-- Message content area -->
+            <div class="chat-view-area-wrapper">
+                <div class="chat-view-area">
+                    <MessageView ref="messageBox" v-for="m in messages" :message="m" :user="user" :users="conversation.users"></MessageView>
+                </div>
+            </div>
+
+            <!-- message input area -->
             <div class="list-group-item">
                 <div class="input-group">
-                    <input style="background-color:#F0F4F3" ref="ipt-text" id="ipt-text" v-model="message" type="text" class="form-control" placeholder="Type a message..." v-jump:click="'btn-send'" maxlength="255">
+                    <input ref="ipt-text" id="ipt-text" v-model="message" type="text" class="form-control" placeholder="Type a message..." v-jump:click="'btn-send'" maxlength="255" autocomplete="off">
                     <span class="input-group-btn">
-                        <button ref="btn-send" id="btn-send" class="btn btn-default" :class="message.length > 0 ? 'active' : ''" type="button" @click="sendMessage" v-jump:focus="'ipt-text'" :disabled="sending">
-                            <i class="fa fa-play" aria-hidden="true"></i>
+                        <button ref="btn-send" id="btn-send" class="btn" :class="message.length > 0 ? 'active' : ''" type="button" @click="sendMessage" v-jump:focus="'ipt-text'" :disabled="sending">
+                            <airMessageIcon :size="15" />
                         </button>
                     </span>
                 </div>
@@ -39,18 +61,27 @@
 </template>
 <script>
 import {mapGetters, mapActions} from 'vuex';
+import moment from 'moment';
+
+// import components for this
+import closeIcon from '../../icon/CloseIcon';
+import airMessageIcon from '../../icon/AirMessageIcon';
 import MessageView from '../MessageView';
 import router from '../../router';
-import moment from 'moment';
 import bus from '../../services/bus-event';
 
+let totalCount = 5;
 export default {
     name: 'conversation-chat',
     data () {
         return {
             message: '',
             mustJump: false,
-            sending: false
+            sending: false,
+            redRating: null,
+            greyRating: null,
+            no_review: false,
+            last_connection_time: ''
         };
     },
     computed: {
@@ -61,10 +92,12 @@ export default {
             'lastPageConversation': 'conversations/lastPageConversation',
             'timestampConversation': 'conversations/timestampConversation',
             'title': 'actionbars/title',
-            'isMobile': 'device/isMobile'
+            'isMobile': 'device/isMobile',
+            'users': 'auth/users'
         }),
         lastConnection () {
             let users = this.conversation.users.filter(item => item.id !== this.user.id);
+            console.log('lastConnection', users);
             if (users.length > 1) {
                 return '';
             } else {
@@ -91,11 +124,13 @@ export default {
             if (this.conversation.users[0].id === this.user.id) {
                 id = 1;
             };
-            return {
-                id: this.conversation.users[id].id,
-                userProfile: this.conversation.users[id],
-                activeTab: 1
+            
+            let userId = this.conversation.users[id].id.toString();
+            let data = {
+                id: this.id,
+                status: this.status
             };
+            this.$router.push({name: 'profileDetail', params: {id: userId, titleText: 'chat', data: data}});
         },
 
         sendMessage () {
@@ -116,6 +151,8 @@ export default {
         },
 
         jumpEndOfConversation () {
+            let scroll = this.$refs.messageBox[0];
+            console.log('scroll', scroll.scrollHeight);
             if (this.isMobile) {
                 window.scrollTo(0, document.body.scrollHeight);
             } else {
@@ -127,6 +164,8 @@ export default {
         },
 
         searchMore () {
+            console.log('conversation', this.conversation);
+            console.log('user', this.user);
             this.findMessage({more: true});
         },
 
@@ -147,6 +186,28 @@ export default {
     mounted () {
         bus.on('clear-click', this.onClearClick);
         this.refresh();
+        console.log('users', this.users);
+        console.log('conversation', this.conversation);
+        this.users.forEach(user => {
+            if (user.id === this.conversation.users[0].id) {
+                this.redRating = [];
+                this.greyRating = [];
+                let ratingCount = user.positive_ratings + user.negative_ratings;
+                // rating count
+                if (ratingCount !== 0) {
+                    for (let i = 0; i < ratingCount; i++) {
+                        this.redRating.push(i);
+                    }
+
+                    for (let j = 0; j < (totalCount - ratingCount); j++) {
+                        this.greyRating.push(j);
+                    }
+                } else {
+                    this.no_review = true;
+                }
+            }
+        });
+        this.last_connection_time = moment(this.conversation.last_message.created_at).format('ddd DD/M') + ' at ' + moment(this.conversation.last_message.created_at).format('HA');
     },
     updated () {
         if (this.mustJump) {
@@ -175,22 +236,45 @@ export default {
         }
 
     },
-    props: [
-        'id'
-    ],
+    props: {
+        id: {
+            type: Number,
+            required: false,
+            default: 0
+        },
+        status: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    },
     components: {
-        MessageView
+        MessageView,
+        closeIcon,
+        airMessageIcon
     }
 };
 </script>
 
 <style scoped>
+    #ipt-text {
+        border-radius: 10px 0 0 10px;
+        background: #F0F4F3;
+        border: none;
+    }
     #btn-more {
         padding: 1em 0;
     }
     #btn-send {
         color: #ccc;
+        background: #F0F4F3;
         transition: color 200ms linear;
+        margin: unset;
+        padding: 0 20px;
+        height: 40px;
+        border: none;
+        box-shadow: none !important;
+        border-radius: 0 10px 10px 0;
     }
     #btn-send.active {
         color: #333;

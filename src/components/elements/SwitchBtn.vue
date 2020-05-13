@@ -1,7 +1,7 @@
 <template>
-    <div @click="toggleBtn" class="switch-btn" :style="reverseFlag?'background: #ABE5C4': ''">
+    <div @click="toggleBtn" class="switch-btn" :style="(reverseFlag)?'background: #ABE5C4': ''">
         <!-- move btn -->
-        <div :class="reverseFlag?'move-btn position-right': 'move-btn position-left'">
+        <div :class="(reverseFlag)?'move-btn position-right': 'move-btn position-left'">
             
         </div>
     </div>
@@ -13,12 +13,14 @@ export default {
     data () {
         return {
             reverseFlag: false
-        }
+        };
     },
     methods: {
         toggleBtn: function () {
-            this.reverseFlag = !this.reverseFlag;
-            this.$emit('toggle', this.reverseFlag);
+            if (!this.postFlag) {
+                this.reverseFlag = !this.reverseFlag;
+                this.$emit('toggle', this.reverseFlag);
+            }
         }
     }
 };

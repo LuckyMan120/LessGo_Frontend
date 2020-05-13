@@ -262,6 +262,7 @@ export default {
                 params.date = this.dateAnswer;
             }
             params.is_passenger = this.isPassenger;
+            console.log('search', params);
             if (foreignCountry < 2) {
                 // console.log('trip-search', params);
                 this.$emit('trip-search', params);

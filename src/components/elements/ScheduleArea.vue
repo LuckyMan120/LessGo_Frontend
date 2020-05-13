@@ -93,22 +93,31 @@ export default {
         timeChange: function (data) {
             // compare by compareKey
             switch (this.compareKey) {
-                case 1:
-                    if (data.type === 'singleTime') {
-                        this.schedule[this.selectedValue][data.type] = data.time;
-                    } else if (data.type === 'firstTime') {
-                        this.schedule[this.selectedValue][data.type] = data.time;
-                    } else {
-                        this.schedule[this.selectedValue][data.type] = data.time;
-                    }
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    this.schedule[0][data.type] = data.time;
-                    break;
-                default:
-                    break;
+            case 1:
+                if (data.type === 'singleTime') {
+                    this.schedule[this.selectedValue][data.type] = data.time;
+                } else if (data.type === 'firstTime') {
+                    this.schedule[this.selectedValue][data.type] = data.time;
+                } else {
+                    this.schedule[this.selectedValue][data.type] = data.time;
+                }
+                break;
+            case 2:
+                if (data.type === 'singleTime') {
+                    this.schedule[this.selectedValue][data.type] = data.time;
+                } else if (data.type === 'firstTime') {
+                    this.schedule[this.selectedValue][data.type] = data.time;
+                } else {
+                    this.schedule[this.selectedValue][data.type] = data.time;
+                }
+                break;
+            case 3:
+                console.log('weekly', this.schedule);
+                console.log('data', data);
+                this.schedule[0][data.type] = data.time;
+                break;
+            default:
+                break;
             }
             this.$emit('get-data', this.schedule);
         }

@@ -7,7 +7,7 @@
                 <small>{{ result.address.state }}, {{ result.address.country }}</small>
             </button>
             <small class="copy" v-if="results.length || this.waiting">
-                <img src="/static/img/loader.gif" alt="" class="ajax-loader" v-if="this.waiting" />
+                <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" v-if="this.waiting" />
                 <span>© OpenStreetMap</span>
             </small>
         </div>

@@ -21,6 +21,11 @@
       font-size: 100%;
 
   }
+
+  div {
+      margin-top: 0px ;
+    }
+    
   body {
       background: var(--main-background);
       color: var(--main-font-color);
@@ -1478,26 +1483,23 @@
       text-align: left;
       margin-bottom: .6em;
   }
-  .message-wrapper:last-child {
-      margin-bottom: 2em;
-  }
   .message-wrapper-me {
       text-align: right;
   }
   .message-wrapper .message {
       display: inline-block;
-      padding: .4em 1em;
-      border-radius: 25px;
+      padding: 1em;
       width: auto;
-      background: var(--secondary-background);
-      color: #fff;
+      background: white;
+      color: black;
   }
   .conversation_chat--chats  .media-body,
   .message-wrapper .message .media-body {
       width: auto;
   }
   .message-wrapper-me .message {
-      background: #1C8983;;
+      background: #1C8983;
+      border-radius: 25px 25px 10px 25px;
       color: #ffffff;
   }
   .message_meta {
@@ -1797,10 +1799,6 @@
       flex-direction: column;
       align-content: center;
       width: 100%;
-  }
-
-  .conversation-component {
-      padding-bottom: 3em;
   }
   .footer-component .container {
       padding: 2.4em 0;
@@ -2945,9 +2943,6 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
     
 }
 
-.col-xs-24{
-    margin-top: 2.5em;
-}
 
 .profile-rates-component.container.clearfix {
     margin-bottom: 6em;
@@ -3042,4 +3037,42 @@ input.form-control.form-control-with-icon.form-control-map-autocomplete {
 
 img.ajax-loader {
     width: 100% !important;
+}
+
+ul.slick-dots {
+    display: none !important;
+}
+
+.trip-board {
+    top: -20em;
+}
+
+not-found{
+    marigin-top: 2em;
+}
+
+ul.slick-dots {
+    display: none !important;
+}
+
+.Payment{
+    display: none;
+}
+
+.not-found {
+    margin-top: 2em !important;
+    margin: 0em;
+    padding: 2em;
+}
+
+.payment-method {
+    display: none;
+}
+
+
+.search-title {
+    margin-top: 1em !important;
+}
+.identification {
+    display: none !important;
 }

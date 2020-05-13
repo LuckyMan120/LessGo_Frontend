@@ -1,9 +1,8 @@
 config = {
   NODE_ENV: '"production"',
-  API_URL: '"https://lessgo.app"',
-  MAPS_API: '"AIzaSyDz9fNRr5-nfCFN6ULDZaLt0xUckgKl3z4"',
+  API_URL: '"http://khaled.xyz"',
+  MAPS_API: '"AIzaSyDoi0kDoetjxsvsctCrRb99I5lu1GJMj_8"',
   FACEBOOK_API: '"147151221990591"'
-
 }
 
 if (!process.env.PLATFORM || process.env.PLATFORM == 'DESKTOP') {

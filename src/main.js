@@ -33,7 +33,7 @@ import './styles/icons.css';
 import './styles/other.css';
 
 import 'mdbvue/lib/css/mdb.min.css';
-import 'vue2-timepicker/dist/VueTimepicker.css'
+import 'vue2-timepicker/dist/VueTimepicker.css';
 import 'vue-phone-number-input/dist/vue-phone-number-input.css';
 
 import bus from './services/bus-event';
@@ -44,6 +44,8 @@ import { fas } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Vue2Leaflet from 'vue2-leaflet';
 import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/database';
 
 let debugApi = new DebugApi();
 
@@ -119,14 +121,14 @@ bus.on('system-ready', () => {
             },
             initFirebase: function () {
                 const firebaseApp = firebase.initializeApp({
-                    apiKey: 'AIzaSyCfg1_w9EId4ikRKtPf8EvSm0MmPEBKgcI',
-                    authDomain: 'phone-verify-25d7d.firebaseapp.com',
-                    databaseURL: 'https://phone-verify-25d7d.firebaseio.com',
-                    projectId: 'phone-verify-25d7d',
-                    storageBucket: 'phone-verify-25d7d.appspot.com',
-                    messagingSenderId: '963282220515',
-                    appId: '1:963282220515:web:9a5b571ab34857a6ec1cd6',
-                    measurementId: 'G-21F6VLQMD6'
+                    apiKey: 'AIzaSyB6a8djdjdsmm45ataSbKgI2ykq3oEW3Rg',
+                    authDomain: 'fir-phone-verify-86e14.firebaseapp.com',
+                    databaseURL: 'https://fir-phone-verify-86e14.firebaseio.com',
+                    projectId: 'fir-phone-verify-86e14',
+                    storageBucket: 'fir-phone-verify-86e14.appspot.com',
+                    messagingSenderId: '1042258655682',
+                    appId: '1:1042258655682:web:bc3a133533fee5399f3e5b',
+                    measurementId: 'G-GBKJDQ2NE'
                 });
             }
         },

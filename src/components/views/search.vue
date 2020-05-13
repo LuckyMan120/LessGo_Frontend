@@ -53,7 +53,7 @@
             </div>
             -->
             <div v-if="runningSearch" class="more-trips-loading">
-                <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                 Loading more results
             </div>
             <p slot="no-data"   role="alert"  :class="isMobile ? 'mobile-alert' : ''">
@@ -74,7 +74,7 @@
                 </span>
             </p>
             <p slot="loading" class="alert alert-info" role="alert">
-                <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                 Loading trips ...
             </p>
         </Loading>

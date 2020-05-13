@@ -13,11 +13,21 @@
                 </h3>
                 <div slot="body">
                     <div class="text-left carpoodatos">
-                      <p> Before accepting a seat request, send a message to the other person to coordinate everything related to the trip: meeting point, arrival point, bag size, contribution for fuel and tolls, etc. </p>
-                       <p> If you accept a seat request, the commitment to travel between you and the other person is generated, enabling the possibility of qualification 24 hours after the start of the trip. They will have 14 days to rate. </p>
-                       <p> You can rate even if you cancel the trip or go down to / get off the other person. </p>
-                       <p> Do not offer a trip if you are not sure that you are going to travel. If something should happen that forces you to cancel it, notify the people who were traveling as soon as possible. </p>
-                       <p> Any questions write to <a href="mailto:info@lessgo.app"> info@lessgo.app </a> or our social networks. </p>
+                        <p>
+                            Before accepting a seat request, send a message to the other person to coordinate everything related to the trip: meeting point, arrival point, bag size, contribution for fuel and tolls, etc.
+                        </p>
+                        <p>
+                            If you accept a seat request, the commitment to travel between you and the other person is generated, enabling the possibility of qualification 24 hours after the start of the trip. They will have 14 days to rate.
+                        </p>
+                        <p>
+                            You can rate even if you cancel the trip or go down to / get off the other person.
+                        </p>
+                        <p>
+                            Do not offer a trip if you are not sure that you are going to travel. If something should happen that forces you to cancel it, notify the people who were traveling as soon as possible.
+                        </p>
+                        <p>
+                            Any questions write to <a href="mailto:info@lessgo.app"> info@lessgo.app </a> or our social networks.
+                        </p>
                     </div>
                     <div class="check" style="margin-bottom:10px;">
                         <label class="check-inline">
@@ -50,6 +60,17 @@
 .modal-default-button{
     width: 7em;
 }
+.message-button {
+    width: 78%;
+}
+.btn-accept-request, .btn-primary, .btn-secondary {
+    padding: 10px !important;
+    border-radius: 10px !important;
+    color: white !important;
+    font-size: 15px !important;
+    font-family: Avenir ! important;
+    width: 100% !important;
+}
 </style>
 
 <script>
@@ -63,7 +84,7 @@ export default {
             acceptInProcess: false,
             rejectInProcess: false,
             showModalRequestSeat: false,
-            acceptRequestValue: 0
+            acceptRequestValue: 1
         };
     },
     computed: {
@@ -178,6 +199,9 @@ export default {
 
     components: {
         modal
+    },
+    mounted () {
+        console.log('test', this.user);
     },
 
     props: [

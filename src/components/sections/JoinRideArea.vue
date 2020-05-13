@@ -1,17 +1,17 @@
 <template>
     <div v-if="show" class="joinRideArea">
-        <div class="virtual-bk" style="height: 205vh;"></div>
+        <div class="virtual-bk" style="height: 84em;"></div>
         
         <!-- join area -->
         <div class="join-area">
-            <profileTicketIcon :data="driverDetail" />
+            <profileTicketIcon :data="driverDetail" @joinStatus="saveJoinAvailStatus" />
             <div class="ride-payment">
                 <span>
                     NO. OF SEATS
                 </span>
                 <div class="car-seat-area">
                     <div class="seat-number">
-                        <greySeatIcon :size="15" :color="'#abe5c4'" />
+                        <img :src="seat_img" />
                         <p>{{ seat_count }}</p>
                     </div>
                     <div @click="selectSeat(-1)" class="car-minus">
@@ -23,7 +23,7 @@
                 </div>
 
                 <!-- payment area -->
-                <div>
+                <div class="payment-method">
                     <span>PAYMENT METHOD</span>
                     <!-- payments -->
                     <div class="payments" @click="paymentList">
@@ -57,7 +57,7 @@
                         </div>
                         <!-- down and up icon -->
                         <div class="downUp" :style="list?'transform: scaleY(-1);' : ''">
-                            <downIcon :size="15" :color="'black'" />
+                            <v-icon icon="angle-down" style="font-size: 25px; width: 20px" />
                         </div>
                     </div>
 
@@ -102,11 +102,13 @@
                 <div class="subtotal">
                     <div>
                         <span>SUBTOTAL</span>
-                        <span class="subtotal-price">JOD&nbsp;{{ this.driverDetail.trips.seat_price }}</span>
+                        <span class="subtotal-price">JOD&nbsp;{{ this.driverDetail.payment }}</span>
                     </div>
 
                     <!-- Join -->
                     <button @click="joinRide">Join</button>
+                    <!-- Back -->
+                    <button @click="goBack" class="back-btn">Back</button>
                 </div>
             </div>
         </div>
@@ -114,12 +116,15 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from 'vuex';
+
 // import components for this
 import profileTicketIcon from '../../icon/ProfileTicketIcon';
-import greySeatIcon from '../../icon/greySeatIcon';
+import greySeatIcon from '../../icon/GreySeatIcon';
 import minusIcon from '../../icon/MinusIcon';
 import plusIcon from '../../icon/PlusIcon';
 import downIcon from '../../icon/DownIcon';
+import dialogs from '../../services/dialogs.js';
 
 export default {
     name: 'joinRideArea',
@@ -132,8 +137,10 @@ export default {
             cash: false,
             list: false,
             seat_count: 1,
-            total_seat_count: null
-        }
+            total_seat_count: null,
+            seat_img: process.env.ROUTE_BASE + 'static/img/seat.png',
+            joinedStatus: ''
+        };
     },
     props: {
         data: {
@@ -147,44 +154,51 @@ export default {
             default: false
         }
     },
+    mounted () {
+        console.log('data', this.data);
+        this.total_seat_count = this.data.total_seats;
+    },
     computed: {
-        initIcons: function () {
-            this.total_seat_count = this.data.trips.total_seats;
-        }
+        ...mapGetters({
+            user: 'auth/user'
+        })
     },
     methods: {
+        ...mapActions({
+            addPassenger: 'passenger/makeRequest'
+        }),
         setPayment: function (payment) {
             switch (payment) {
-                case 'cash':
-                    this.cash = true;
-                    this.wallet = false;
-                    this.visa = false;
-                    this.mastercard = false;
-                    this.list = !this.list;
-                    break;
-                case 'wallet':
-                    this.cash = false;
-                    this.wallet = true;
-                    this.visa = false;
-                    this.mastercard = false;
-                    this.list = !this.list;
-                    break;
-                case 'visa':
-                    this.cash = false;
-                    this.wallet = false;
-                    this.visa = true;
-                    this.mastercard = false;
-                    this.list = !this.list;
-                    break;
-                case 'mastercard':
-                    this.cash = false;
-                    this.wallet = false;
-                    this.visa = false;
-                    this.mastercard = true;
-                    this.list = !this.list;
-                    break;
-                default:
-                    break;
+            case 'cash':
+                this.cash = true;
+                this.wallet = false;
+                this.visa = false;
+                this.mastercard = false;
+                this.list = !this.list;
+                break;
+            case 'wallet':
+                this.cash = false;
+                this.wallet = true;
+                this.visa = false;
+                this.mastercard = false;
+                this.list = !this.list;
+                break;
+            case 'visa':
+                this.cash = false;
+                this.wallet = false;
+                this.visa = true;
+                this.mastercard = false;
+                this.list = !this.list;
+                break;
+            case 'mastercard':
+                this.cash = false;
+                this.wallet = false;
+                this.visa = false;
+                this.mastercard = true;
+                this.list = !this.list;
+                break;
+            default:
+                break;
             }
         },
         paymentList: function () {
@@ -202,13 +216,65 @@ export default {
                 this.seat_count = currentcount;
             }
         },
+        saveJoinAvailStatus: function (status) {
+            this.joinedStatus = status;
+        },
+        goBack: function () {
+            this.$emit('reverse', false);
+        },
         joinRide: function () {
-            this.$router.push({name: 'main'});
-        }
-    },
-    watch: {
-        initIcons: function () {
+            let joinStatus = false;
+            let sex = '';
+            
+            // join usage
+            switch (this.joinedStatus) {
+            case 'all':
+                break;
+            case 'male':
+                if (this.user.gender !== 'male') {
+                    dialogs.message('Only Males can be joined in this trip.', { duration: 10, state: 'error' });
+                    return;
+                }
+                break;
+            case 'female':
+                if (this.user.gender !== 'female') {
+                    dialogs.message('Only Females can be joined in this trip.', { duration: 10, state: 'error' });
+                    return;
+                }
+                break;
+            default:
+                break;
+            }
 
+            // seat usage
+            if (this.driverDetail.passenger.length !== 0) {
+                if (this.driverDetail.seats_available === 0) {
+                    dialogs.message('All passengers joined in this trip, so No Seats Available.', { duration: 10, state: 'error' });
+                    return;
+                }
+
+                // search joined status of current user
+                this.driverDetail.passenger.forEach(passenger => {
+                    if (this.user.id === passenger.id) {
+                        joinStatus = true;
+                        return false;
+                    }
+                });
+
+                if (joinStatus) {
+                    dialogs.message('You are already joined in this trip.', { duration: 10, state: 'error' });
+                    return;
+                }
+                // add passenger of trip
+                this.addPassenger(this.driverDetail.id);
+                dialogs.message('Join Request sent.');
+                this.$router.push({name: 'main'});
+            } else {
+                // add passenger of trip
+                this.addPassenger(this.driverDetail.id);
+                dialogs.message('Join Request sent.');
+                this.$router.push({name: 'main'});
+            }
         }
     },
     components: {

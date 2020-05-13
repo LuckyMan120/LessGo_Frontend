@@ -16,6 +16,7 @@ class LocalStorage {
     }
 
     getItem (key) {
+        console.log('getItem', key);
         var temp = window.localStorage.getItem(key);
         if (temp && temp !== 'undefined') {
             try {

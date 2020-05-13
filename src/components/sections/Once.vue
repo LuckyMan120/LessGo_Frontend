@@ -1,7 +1,7 @@
 <template>
     <div>
         <span>CHOOSE RIDE DATE</span>
-        <datePicker @onChange="getDate" :format="'DD dd MMMM'" style="margin: 10px 0 20px 0; width: 100%;" />
+        <datePicker @onChange="getDate" :format="'D dd MMMM'" style="margin: 10px 0 20px 0; width: 100%;" />
         <scheduleArea :compareKey="3" :data="rideData" @get-data="getTime" :tripType="tripType" v-show="true" :type="false" />
     </div>  
 </template>
@@ -52,27 +52,6 @@ export default {
                 this.$emit('get-data', payload);
                 formatTime = '';
             });
-
-            // only test
-            // let time = moment(data[0].singleTime).toDate();
-            // if (time.getHours().toString().length === 1) {
-            //     if (time.getMinutes().toString().length === 1) {
-            //         formatTime += '0' + time.getHours() + ':0' + time.getMinutes() + ':00';
-            //     } else {
-            //         formatTime += '0' + time.getHours() + ':' + time.getMinutes() + ':00';
-            //     }
-            // } else {
-            //     if (time.getMinutes().toString().length === 1) {
-            //         formatTime += time.getHours() + ':0' + time.getMinutes() + ':00';
-            //     } else {
-            //         formatTime += time.getHours() + ':' + time.getMinutes() + ':00';
-            //     }
-            // }
-            // let payload = {
-            //     'time': formatTime,
-            //     'title': 'time'
-            // };
-            // this.$emit('get-data', payload);
         },
         getDate: function (data) {
             let formatDate = moment(data).format('YYYY-MM-DD'); // format as '2000-01-01'

@@ -1,6 +1,6 @@
 <template>
     <div class="time-selector-part" :style="{'width': width + '%'}">
-        <timeClockIcon :size="25" :color="'#abe5c4'" />
+        <v-icon :icon="['fa','clock']" class="v-icon-clock" />
         <timeselector @input="changeTime" v-model="time" :class="'time-selector'" returnFormat="HH" :placeholder="placeholder"></timeselector>
     </div>
 </template>
@@ -43,7 +43,7 @@ export default {
     data () {
         return {
             time: null
-        }
+        };
     },
     methods: {
         changeTime: function (time) {
@@ -62,7 +62,7 @@ export default {
             newDate.setHours(0);
             newDate.setMinutes(0);
             newDate.setSeconds(0);
-            this.time = newDate;            
+            this.time = newDate;
         }
     }
 };

@@ -56,6 +56,7 @@ const actions = {
         if (texto.length > 0) {
             store.commit(types.CONVERSATION_SET_USERLIST, null);
             return conversationApi.userList({value: texto}).then((response) => {
+                console.log('response', response.data);
                 store.commit(types.CONVERSATION_SET_USERLIST, response.data);
             });
         } else {

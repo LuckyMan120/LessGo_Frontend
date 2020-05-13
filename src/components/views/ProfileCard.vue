@@ -19,11 +19,11 @@ export default {
     data () {
         return {
 
-        }
+        };
     },
     props: ['user'],
     components: {
         bubble
     }
-}
+};
 </script>

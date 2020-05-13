@@ -164,110 +164,118 @@ export default {
     },
     methods: {
         ...mapActions({
-            doRegister: 'auth/register'
+            saveData: 'auth/saveSignupData'
         }),
         selectPage: function (id) {
             let currentPageNum = this.pageNumber;
             switch (currentPageNum) {
-                case 1: // first page
-                    if (id === 1) {
-                        if (this.validate()) {
-                            dialogs.message('You must correct or complete some fields to complete your registration.', { duration: 10, state: 'error' });
-                            return;
-                        }
-
-                        let data = {
-                            gender: this.gender,
-                            birthday: this.birthday,
-                            passwordConfirmation: this.passwordConfirmation,
-                            password: this.password,
-                            name: this.name + ' ' + this.sureName
-                        };
-                        this.signupData = data;
-                        this.pageNumber += id;
-                    } else { // to signin page
-                        this.$router.push({name: 'signin'});
+            case 1: // first page
+                if (id === 1) {
+                    if (this.validate()) {
+                        dialogs.message('You must correct or complete some fields to complete your registration.', { duration: 10, state: 'error' });
+                        return;
                     }
-                    break;
-                case 2: // second page
-                    if (id === 1) {
-                        let vm = this;
-                        if (!this.phoneValid) {
-                            this.phoneError.state = true;
-                            this.phoneError.message = 'You must validate your phone number.';
-                            dialogs.message('You must correct or complete Phone Number field to complete your registration.', { duration: 10, state: 'error' });
-                            return;
-                        }
 
-                        // send phoneNumber for verify and get otp code
-                        let phoNumber = this.phoNumber;
-                        let appVerifier = this.appVerifier;
-
-                        firebase.auth().signInWithPhoneNumber(phoNumber, appVerifier)
-                            .then(function (confirmationResult) {
-                                window.confirmationResult = confirmationResult;
-                                window.alert('SMS sent');
-
-                                vm.signupData['mobile'] = phoNumber;
-                                vm.signupData['email'] = 'yonsin@gju.edu.jo';
-                                vm.pageNumber += id;
-                            })
-                            .catch(function (error) {
-                                window.alert('Error ! SMS not sent');
-                            });
-                    } else { // to signin page
-                        this.pageNumber += id;
+                    let data = {
+                        gender: this.gender,
+                        birthday: this.birthday,
+                        passwordConfirmation: this.passwordConfirmation,
+                        password: this.password,
+                        name: this.name + ' ' + this.sureName
+                    };
+                    this.signupData = data;
+                    this.pageNumber += id;
+                } else { // to signin page
+                    this.$router.push({name: 'signin'});
+                }
+                break;
+            case 2: // second page
+                if (id === 1) {
+                    let vm = this;
+                    if (!this.phoneValid) {
+                        this.phoneError.state = true;
+                        this.phoneError.message = 'You must validate your phone number.';
+                        dialogs.message('You must correct or complete Phone Number field to complete your registration.', { duration: 10, state: 'error' });
+                        return;
                     }
-                    break;
-                case 3: // third page
-                    if (id === 1) {
-                        if (this.codevalidate()) {
-                            dialogs.message('You must correct or complete Verify field to complete your registration.', { duration: 10, state: 'error' });
-                            return;
-                        }
 
-                        let vm = this;
-                        let otp = this.code;
+                    // send phoneNumber for verify and get otp code
+                    let phoNumber = this.phoNumber;
+                    let appVerifier = this.appVerifier;
 
-                        // verify phoneNumber from otp
-                        window.confirmationResult.confirm(otp)
-                            .then(function (result) {
-                                let user = result.user;
+                    console.log('phoNumber', phoNumber);
+                    firebase.auth().signInWithPhoneNumber(phoNumber, appVerifier)
+                        .then(function (confirmationResult) {
+                            window.confirmationResult = confirmationResult;
+                            window.alert('SMS sent');
 
-                                let data = vm.signupData;
-                                data.active = true;
-                                vm.signupFlag = true;
-                                // success register
-                                vm.doRegister(data).then(() => {
-                                    vm.signupFlag = false;
-                                    vm.$router.push({name: 'signUpSuccess'});
-                                }).catch((err) => {
-                                    console.log(err);
-                                    if (err) {
-                                        if (err.status === 422) {
-                                            if (err.data && err.data.errors && err.data.errors.email) {
-                                                dialogs.message('The email account entered is in use.', {state: 'error'});
-                                                vm.emailError.state = true;
-                                                vm.emailError.message = 'The email account entered is in use.';
-                                            } else {
-                                                dialogs.message('Some of the fields entered is not valid.', {state: 'error'});
-                                            }
-                                        } else {
-                                            dialogs.message('There was an error processing the registry, please try again.', {state: 'error'});
-                                        }
-                                    }
-                                    vm.progress = false;
-                                });
-                            })
-                            .catch(function (error) {
-
-                            });
-                    } else { // to signin page
-                        this.pageNumber += id;
+                            vm.signupData['mobile'] = phoNumber;
+                            // vm.signupData['email'] = 'zeus@gju.edu.jo';
+                            vm.pageNumber += id;
+                        })
+                        .catch(error => {
+                            console.log('error', error)
+                            window.alert('Error ! SMS not sent');
+                        });
+                } else { // to signin page
+                    this.pageNumber += id;
+                }
+                break;
+            case 3: // third page
+                if (id === 1) {
+                    if (this.codevalidate()) {
+                        dialogs.message('You must correct or complete Verify field to complete your registration.', { duration: 10, state: 'error' });
+                        return;
                     }
-                    break;
-                default:
-                    break;
+
+                    this.signupFlag = true;
+                    let vm = this;
+                    let otp = this.code;
+
+                    // verify phoneNumber from otp
+                    window.confirmationResult.confirm(otp)
+                        .then(function (result) {
+                            console.log('result', result);
+                            let user = result.user;
+
+                            let data = vm.signupData;
+                            // data.active = true;
+
+                            // save SignData
+                            vm.saveData(data);
+                            vm.signupFlag = false;
+                            // success register
+                            vm.$router.push({name: 'signUpSuccess'});
+                            // vm.doRegister(data).then(() => {
+                            //     vm.signupFlag = false;
+                            //     vm.$router.push({name: 'signUpSuccess'});
+                            // }).catch((err) => {
+                            //     console.log(err);
+                            //     if (err) {
+                            //         if (err.status === 422) {
+                            //             if (err.data && err.data.errors && err.data.errors.email) {
+                            //                 dialogs.message('The email account entered is in use.', {state: 'error'});
+                            //                 vm.emailError.state = true;
+                            //                 vm.emailError.message = 'The email account entered is in use.';
+                            //             } else {
+                            //                 dialogs.message('Some of the fields entered is not valid.', {state: 'error'});
+                            //             }
+                            //         } else {
+                            //             dialogs.message('There was an error processing the registry, please try again.', {state: 'error'});
+                            //         }
+                            //     }
+                            //     vm.progress = false;
+                            // });
+                        })
+                        .catch(function (error) {
+                            console.log('error', error);
+                        });
+                } else { // to signin page
+                    this.pageNumber += id;
+                }
+                break;
+            default:
+                break;
             }
         },
         getBirth: function (date) {

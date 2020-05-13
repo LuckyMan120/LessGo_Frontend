@@ -28,7 +28,7 @@
 
             <p slot="no-data" class="alert alert-warning"  role="alert">No Ratings</p>
             <p slot="loading" class="alert alert-info" role="alert">
-                <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                 Loading ratings ...
             </p>
         </Loading>

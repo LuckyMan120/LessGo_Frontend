@@ -24,9 +24,8 @@
     }
 </style>
 <script>
-import Vue from 'vue';
 export default{
     name: 'bubble',
     props: ['title', 'image']
-}
+};
 </script>

@@ -2,12 +2,12 @@
     <div class="driver-detail">
         <div :style="filterFlag?'filter: blur(5px)': ''">
             <div class="driver-detail-area">
-                <closeIcon :size="10" :classes="'close-message'" />
+                <closeIcon :size="10" :classes="'close-message'" title="searchResult" :data="data" :closeTitle="closeTitle" />
             </div>
 
             <!-- driver ticket -->
-            <div class="driver-ticket">
-                <profileTicketIcon @join="joinRide" :joinFlag="true" :data="driverDetail" />
+            <div class="driver-ticket" style="top: 20px !important;">
+                <profileTicketIcon @join="joinRide" :data="driverDetail" :allData="data" :searchTitle="closeTitle" :joinFlag="true" />
             </div>
 
             <!-- map -->
@@ -34,66 +34,69 @@
                 <div v-if="!zoomFlag" class="details-body">
                     <h3>NOTES</h3>
                     <span>
-                        {{ this.driverDetail.trips.description }}
+                        {{ this.driverDetail.description }}
                     </span>
                     
                     <!-- preferences -->
                     <h3>PREFERENCES</h3>
-                    <preferences :data="preferences" />
+                    <detailPreferences :data="preferences" />
                     
                     <!-- amenties -->
                     <h3>AMENTIES</h3>
-                    <amenties :data="amenties" />
+                    <detailAmenities :data="amenities" />
 
                     <!-- passengers -->
                     <h3>PASSENGERS</h3>
                     <div class="details-body-common">
                         <div v-for="passenger in passengers" class="details-body-common-area">
-                            <div v-imgSrc:src="passenger.passenger_avatar   " :class="'img-circle'"></div>
-                            <p>{{ passenger.passenger_name }}</p>
+                            <div v-imgSrc:profile="passenger.image" :class="'img-circle'"></div>
+                            <p>{{ passenger.name }}</p>
                         </div>
-                        <div class="details-body-common-area">
+                        <div v-for="seat in availableSeats" class="details-body-common-area">
                             <div :class="'img-circle'">
                                 <greySeatIcon :size="25" :class="'free-seat'" />
                             </div>
-                            <p style="margin-top: 10px;">name</p>
+                            <p style="margin-top: 10px;">available</p>
                         </div>
                     </div>
 
                     <!-- other details -->
                     <h3>ESTIMATE DISTANCE</h3>
-                    <i>{{ this.driverDetail.trips.distance }}&nbsp;km</i>
+                    <i>{{ this.driverDetail.distance }}&nbsp;km</i>
                     <h3>ESTIMATE TRAVEL TIME</h3>
                     <i>
-                        {{ this.driverDetail.trips.estimated_time }}
+                        {{ this.duration }}
                     </i>
                     <h3>APPROX. CARBON FOOTPRINT</h3>
-                    <i>{{ this.driverDetail.trips.co2 }}&nbsp;kg&nbsp;CO<i style="font-size: 10px; display: contents;">2eq</i></i>
+                    <i>{{ this.co2 }}&nbsp;kg&nbsp;CO<i style="font-size: 10px; display: contents;">2eq</i></i>
                 </div>
             </div>
                 
             <!-- button area -->
             <div v-if="!zoomFlag" class="button-area">
-                <button class="offer-ride" @click="joinRide">
+                <button v-if="!messageBtnFlag" class="offer-ride" @click="joinRide">
                     <carIcon :size="17" :color="'white'" />
                     <span>Join this ride</span>
                 </button>
-                <button class="share-btn" @click="shareRide">
+                <button v-if="!messageBtnFlag" class="share-btn" @click="shareRide">
                     <shareIcon :size="15" :color="'#000000'" />
                     <span>
                         Share
                     </span>
                 </button>
+                <button @click="sendMessage" class="offer-ride" style="margin-right: 30vw !important;" v-if="messageBtnFlag">
+                    Send Message
+                </button>
             </div>
         </div>
 
         <!-- joinRideArea -->
-        <joinRideArea :show="joinRideFlag" :data="driverDetail" />
+        <joinRideArea @reverse="reverseAction" :show="joinRideFlag" :data="driverDetail" />
     </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 // import components for this
 import closeIcon from '../../icon/CloseIcon';
@@ -103,48 +106,124 @@ import greySeatIcon from '../../icon/GreySeatIcon';
 import shareIcon from '../../icon/ShareIcon';
 import carIcon from '../../icon/CarIcon';
 import joinRideArea from '../sections/JoinRideArea';
-import preferences from '../sections/Preferences'
+import detailAmenities from '../sections/DetailAmenities';
+import detailPreferences from '../sections/DetailPreferences';
 import amenties from '../sections/Amenties';
 
 export default {
     name: 'driverDetail',
-    props: ['data'],
+    props: {
+        data: {
+            type: Object,
+            required: false,
+            default: null
+        },
+        status: {
+            type: String,
+            required: false,
+            default: ''
+        },
+        closeTitle: {
+            type: String,
+            required: false,
+            default: ''
+        }
+    },
     data () {
         return {
             center: { lat: 31.953940000000003, lng: 35.910630000000005 },
             driverDetail: null,
             joinRideFlag: false,
             passengers: null,
-            amenties: null,
+            amenities: null,
             preferences: null,
             zoomFlag: false,
             filterFlag: false,
             path: [],
             from_town_latlng: null,
             to_town_latlng: null,
-            zoomValue: 12
+            zoomValue: 12,
+            co2: '',
+            duration: '',
+            availableSeats: [],
+            messageBtnFlag: false
+        }
+    },
+    mounted () {
+        console.log('newdata', this.data);
+        console.log('mounted', this.selectedTrip);
+        this.driverDetail = this.selectedTrip;
+        this.passengers = this.selectedTrip.passenger;
+
+        // set amenities and preferences
+        let amenData = {};
+        amenData['wifi'] = this.selectedTrip.wifi;
+        amenData['snacks'] = this.selectedTrip.snacks;
+        amenData['charger'] = this.selectedTrip.charger;
+        amenData['xcomfort'] = this.selectedTrip.xcomfort;
+        amenData['aux'] = this.selectedTrip.aux;
+        amenData['sanitizer'] = this.selectedTrip.sanitizer;
+
+        this.amenities = amenData;
+
+        let preData = {};
+        preData['is_smoker'] = this.selectedTrip.is_smoker;
+        preData['pets'] = this.selectedTrip.pets;
+        preData['food'] = this.selectedTrip.food;
+        preData['speaking'] = this.selectedTrip.speaking;
+        preData['luggage'] = this.selectedTrip.luggage;
+        preData['protection'] = this.selectedTrip.protection;
+
+        this.preferences = preData;
+
+        // Lat and Lng for draw route
+        let fromLatLng = {
+            lat: this.selectedTrip.points[0].lat,
+            lng: this.selectedTrip.points[0].lng
+        };
+
+        let toLatLng = {
+            lat: this.selectedTrip.points[1].lat,
+            lng: this.selectedTrip.points[1].lng
+        };
+
+        // draw route
+        this.drawRoute(fromLatLng, toLatLng);
+
+        // set available seats
+        for (let i = 0; i < this.selectedTrip.seats_available; i++) {
+            this.availableSeats.push(i);
+        }
+
+        // check request this from otheruser
+        if (this.status === 'otherUser') {
+            this.messageBtnFlag = true;
         }
     },
     computed: {
         ...mapGetters({
-            selectedTrip: 'trips/selectedTrip'
-        }),
-        initDetail: function () {
-            console.log('driverDetail', this.selectedTrip);
-            this.driverDetail = this.selectedTrip;
-            this.passengers = this.selectedTrip.passengers;
-            this.preferences = this.selectedTrip.trips.preferences;
-            this.amenties = this.selectedTrip.trips.amenities;
-
-            // draw route
-            this.drawRoute(this.selectedTrip.trips.from_town_latlng, this.selectedTrip.trips.to_town_latlng);
-        }
+            selectedTrip: 'trips/selectedTrip',
+            currentUser: 'auth/user'
+        })
     },
     methods: {
+        ...mapActions({
+            lookConversation: 'conversations/createConversation'
+        }),
+        reverseAction: function (flag) {
+            this.joinRideFlag = false;
+            this.filterFlag = false;
+        },
+        sendMessage: function () {
+            let user = this.selectedTrip.user;
+
+            this.lookConversation(user).then(conversation => {
+                this.$router.push({ name: 'conversation-chat', params: { id: conversation.id } });
+            });
+        },
         joinRide: function () {
             this.joinRideFlag = true;
             this.filterFlag = true;
-            console.log(this.joinRideFlag);
         },
         shareRide: function () {
 
@@ -170,8 +249,8 @@ export default {
                 destination: to,
                 travelMode: window.google.maps.TravelMode.DRIVING
             }, function (result, status) {
+                console.log('result', result);
                 if (status === window.google.maps.DirectionsStatus.OK) {
-                    console.log('result', result);
                     for (let i = 0, len = result.routes[0].overview_path.length; i < len; i++) {
                         let points = {
                             lat: result.routes[0].overview_path[i].lat(),
@@ -179,14 +258,19 @@ export default {
                         };
                         betpoints.push(points);
                     }
+                    // claculate time
+                    let duration = result.routes[0].legs[0].duration.value;
+                    let h = Math.floor(duration / 3600);
+                    let m = ((duration % 3600) / 60).toFixed();
+                    
+                    VueComp.duration = result.routes[0].legs[0].duration.text;
+                    let distance = (result.routes[0].legs[0].distance.value / 1000).toFixed(2);
+                    VueComp.co2 = parseFloat(distance * 0.15).toFixed(2);
                     VueComp.path = betpoints;
+
+                    this.driverDetail['co2'] = VueComp.co2;
                 }
             });
-        }
-    },
-    watch: {
-        initDetail: function () {
-            
         }
     },
     components: {
@@ -197,8 +281,8 @@ export default {
         shareIcon,
         carIcon,
         joinRideArea,
-        preferences,
-        amenties
+        detailAmenities,
+        detailPreferences
     }
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
     <div class="main-body">
-        <div :style="giveReviewFlag?'filter: blur(5px)': ''">
+        <div>
             <img :src="main_bk_img" class="main_img" />
             <dropdownMenu @reverse="reverse" />
             <!-- <div class="go-title">
@@ -19,55 +19,37 @@
             </div> -->
 
             <!-- search area -->
-            <div class="searchArea" :style="reserveFlag? 'margin-top: 45px; box-shadow: 0px -6px 10px #d9e7e5;': ''">
+            <div class="searchArea" :style="reserveFlag? 'margin-top: 4em !important; box-shadow: 0px -6px 10px #d9e7e5;': ''">
                 <span class="search-title">
                     Where do you want to go?
                 </span>
-                <span v-if="!activeFlag" class="trips-head" @click="showTrips">
+                <span class="trips-head">
                     Popular trips
                 </span>
 
-                <div v-if="!activeFlag" class="trips-area">
-                    <!-- first area card -->
-                    <div class="amman">
-                        <div class="trip-area-title">
-                            <span>
-                                Amman
-                            </span>
-                            <arrowIcon :size="10" :color="'#707070'" />
-                            <span>
-                                Madaba
-                            </span>
-                            <span style="color: #9CD076; float: right; font-weight: bold;">
-                                JD&nbsp;4
-                            </span>
+                <!-- popular trips area -->
+                <div v-if="showFlag === true" class="trips-area">
+                    <!-- posted trips -->
+                    <VueSlickCarousel v-bind="settings">
+                        <div @click="goDetail(post)" v-for="post in postTrips" class="amman"  :style="{'background': 'url(' + post.image_url + ')'}">
+                            <div class="trip-area-title">
+                                <span>
+                                    {{ post.provinceFrom }}
+                                </span>
+                                <v-icon class="v-icon-exchange-alt" icon="exchange-alt" />
+                                <span>
+                                    {{ post.provinceTo }}
+                                </span>
+                                <span class="JD">
+                                    JD&nbsp;{{ post.payment }}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <!-- second area card -->
-                    <div class="aqaba">
-                        <div class="trip-area-title">
-                            <span>
-                                Jarash
-                            </span>
-                            <arrowIcon :size="10" :color="'#707070'"/>
-                            <span>
-                                Aquba
-                            </span>
-                            <span style="color: #9CD076; float: right; font-weight: bold;">
-                                JD&nbsp;4
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- active ticket area -->
-                <span v-if="activeFlag" style="position: absolute; z-index: 2" class="trips-head" @click="showTrips">Active Trip</span>
-                <div v-if="activeFlag && !giveReviewFlag" style="margin-top: 25px">
-                    <profileTicketIcon :activeFlag="true" :data="currentData" @finish-trip="giveReview" />
+                    </VueSlickCarousel>
                 </div>
 
                 <!-- search body -->
-                <div :style="activeFlag?'margin-top: -50px': ''" class="search-body">
+                <div class="search-body">
                     <span class="some-span">Somewhere else?</span>
                     <tripSearch @searchResult="result" />
                 </div>
@@ -82,108 +64,96 @@
                     </button>
                     <button class="offer-ride" @click="offerRide">
                         <carIcon :size="20" :color="'#D5E9E8'" style="margin-top: -3px;" />
-                        <carPlusIcon :size="15" />
                         <span>Offer ride</span>
                     </button>
                 </div>
             </div>
         </div>
-
-        <!-- give review section -->
-        <div class="review-page" v-if="giveReviewFlag">
-            <div class="virtual-bk"></div>
-            <div class="review-ticket">
-                <profileTicketIcon :reviewFlag="true" :data="currentData" :activeFlag="true" />
-
-                <!-- write review panel -->
-                <div class="write-review">
-                    <div style="text-align: center;">
-                        <div @click="starSelect(num.id)" class="star-area" v-for="num in greyRating" style="">
-                            <ratingStarIcon :size="20" :color="num.selected?'#e65a5b': 'grey'" />
-                        </div>
-                    </div>
-                    <input type="text" v-model="reviewText" placeholder="Write a review (optional)" />
-                    <button @click="setReview">Thanks!</button>
-                </div>
-            </div>
-                
+        <div v-if="loading_flag">
+            <img class="loading-img" :src="loading_img" />
+            <span>Loading Popular Trips</span>
         </div>
     </div>
 </template>
 
 <script>
-import { mapActions } from 'vuex';
-import dialogs from '../../services/dialogs.js';
+import { mapActions, mapGetters } from 'vuex';
+import VueSlickCarousel from 'vue-slick-carousel';
+import 'vue-slick-carousel/dist/vue-slick-carousel.css';
+// optional style for arrows & dots
+import 'vue-slick-carousel/dist/vue-slick-carousel-theme.css';
 import moment from 'moment';
 
 // import components for this
-import arrowIcon from '../../icon/ArrowIcon';
 import tripSearch from '../sections/TripSearch';
 import arrowUpIcon from '../../icon/ArrowUpIcon';
 import dropdownMenu from '../../icon/DropdownMenu';
-import profileTicketIcon from '../../icon/ProfileTicketIcon';
 import ratingStarIcon from '../../icon/RatingStarIcon';
-import carIcon from '../../icon/CarIcon';
-import carPlusIcon from '../../icon/CarPlusIcon';
-
-// import json for next search
-import searchJson from '../../jsons/searchTrips.json';
+import carIcon from '../../icon/CarIcon.vue';
 
 export default {
     name: 'main',
     data () {
         return {
             main_bk_img: '/static/img/landing-bg.png',
+            loading_img: process.env.ROUTE_BASE + 'static/svg/loaderr.gif',
+            test_img: process.env.ROUTE_BASE + 'static/img/amman.jpg',
             from_town: '',
             to_town: '',
             date: '',
             reserveFlag: false,
-            activeFlag: false,
-            currentData: null,
-            giveReviewFlag: false,
-            greyRating: [],
-            reviewText: ''
+            postTrips: null,
+            loading_flag: true,
+            settings: {
+                'dots': true,
+                'autoplay': true,
+                'autoplaySpeed': 1000,
+                'speed': 2000,
+                'pauseOnDotsHover': true,
+                'pauseOnFocus': true,
+                'pauseOnHover': true,
+                'variableWidth': true,
+                'arrows': true,
+                'rtl': true
+            },
+            showFlag: false
         };
     },
     components: {
-        arrowIcon,
-        carPlusIcon,
         tripSearch,
         arrowUpIcon,
         dropdownMenu,
-        profileTicketIcon,
         ratingStarIcon,
-        carIcon
+        carIcon,
+        VueSlickCarousel
     },
     methods: {
         ...mapActions({
-            getTrips: 'trips/getTrips',
-            setTrips: 'trips/setTrips'
+            getAllUsers: 'auth/getAllUsers',
+            tripAsDriver: 'myTrips/tripAsDriver',
+            tripAsPassenger: 'myTrips/tripAsPassenger',
+            deleteAllTrips: 'userTrips/deleteAllTrips',
+            review: 'rates/vote',
+            setSelectedTrip: 'trips/setSelectedTrip'
         }),
+        goDetail: function (data) {
+            this.setSelectedTrip(data);
+
+            // go search result page
+            let status = 'popular';
+            this.$router.push({name: 'searchResult', params: { data: data, status: status }});
+        },
         offerRide: function () {
             this.$router.push({name: 'setCarAndId'});
         },
         searchNewTrip: function () {
-            if (this.from_town === '' || this.to_town === '' || this.date === '') {
-                dialogs.message('You must correct or complete some fields for search trip.', { duration: 10, state: 'error' });
-                return;
-            } else {
-                let data = {
-                    from_town: this.from_town,
-                    to_town: this.to_town,
-                    date: this.date,
-                    trips: []
-                };
-                this.getTrips(data); // search from backend
-                let json = searchJson.searchTrips;
-                json.forEach(trip => {
-                    if (trip.trips.from_town === this.from_town && trip.trips.to_town === this.to_town && moment(this.date).toDate() < moment(trip.trips.created_at).toDate()) {
-                        data.trips.push(trip);
-                    }
-                });
-                this.setTrips(data);
-                this.$router.push({name: 'searchResult'});
-            }
+            let data = {
+                from_town: this.from_town,
+                to_town: this.to_town,
+                date: this.date
+            };
+
+            this.$router.push({name: 'searchResult', params: {data}});
         },
         result: function (obj) {
             this.from_town = obj.from_town;
@@ -192,68 +162,84 @@ export default {
         },
         reverse: function () {
             this.reserveFlag = !this.reserveFlag;
-        },
-        giveReview: function () {
-            this.giveReviewFlag = true;
-        },
-        starSelect: function (num) {
-            console.log(num);
-            let flag = true;
-            this.greyRating.forEach(item => {
-                if (flag) {
-                    if (item.id === num) {
-                        item.selected = !item.selected;
-                        flag = false;
-                    } else {
-                        item.selected = true;
-                    }
-                } else {
-                    item.selected = false;
-                }
-            });
-        },
-        setReview: function () {
-            let ratingCount = 0;
-            this.greyRating.forEach(item => {
-                if (item.selected) {
-                    ratingCount += 1;
-                }
-            });
-            let data = {
-                'ratingCount': ratingCount,
-                'review': this.reviewText
-            };
-            console.log('setReview', data);
-            this.$router.push({name: 'your-trips'});
-        },
-        showTrips: function () {
-            console.log(this.activeFlag);
-            this.activeFlag = !this.activeFlag;
         }
     },
-    mounted () {
-        let json = searchJson.searchTrips;
-        let currentDate = new Date();
-        json.forEach(trip => {
-            if (moment(trip.trips.created_at).toDate() < currentDate) {
-                this.currentData = trip;
-            }
-        });
-        if (this.currentData !== null) {
-            this.activeFlag = true;
-        } else {
-            this.activeFlag = false;
-        }
+    computed: {
+        ...mapGetters({
+            trips: 'myTrips/myTrips',
+            passengerTrips: 'myTrips/passengerTrips',
+            getOtherUsersTripsAsDriver: 'userTrips/driverTrip'
+        })
+    },
+    async mounted () {
+        await this.deleteAllTrips();
+        await this.getAllUsers();
+        await this.tripAsDriver();
+        await this.tripAsPassenger();
+        console.log('data', moment('Oct').format('MMM'));
+        this.loading_flag = false;
+        this.showFlag = true;
 
-        // set default rating
-        for (let i = 1; i <= 5; i++) {
-            this.greyRating.push({'id': i, 'selected': false});
+        let postTripsData = this.getOtherUsersTripsAsDriver;
+        let allTrips = [];
+        console.log('postTrips', postTripsData);
+        // reverse trip search
+        if (postTripsData.length !== 0) {
+            let fromKey = '';
+            let toKey = '';
+            let keys = [
+                {'first': fromKey, 'second': toKey}
+            ];
+
+            postTripsData.forEach(first => {
+                let repeatFlag = false;
+                keys.forEach(key => {
+                    if ((key.first === first.from_town && key.second === first.to_town) || (key.first === first.to_town && key.second === first.from_town)) {
+                        repeatFlag = true;
+                    }
+                });
+
+                if (!repeatFlag) {
+                    // reset reverse Keys
+                    fromKey = first.from_town;
+                    toKey = first.to_town;
+                    let keyData = {
+                        'first': fromKey,
+                        'second': toKey
+                    };
+                    keys.push(keyData);
+                    let commonTrip = {
+                        trips: []
+                    };
+                    commonTrip['from'] = fromKey;
+                    commonTrip['to'] = toKey;
+                    commonTrip['provinceFrom'] = first.points[0].json_address.province;
+                    commonTrip['provinceTo'] = first.points[1].json_address.province;
+                    commonTrip['payment'] = first.payment;
+                    commonTrip['image_url'] = first.image_url;
+                    console.log('image_length', first.image_url.length);
+                    postTripsData.forEach(second => {
+                        if ((second.from_town === fromKey && second.to_town === toKey) || (second.to_town === fromKey && second.from_town === toKey)) {
+                            commonTrip.trips.push(second);
+                        }
+                    });
+
+                    allTrips.push(commonTrip);
+                }
+            });
         }
+        // this.postTrips = postTripsData;
+        this.postTrips = allTrips;
     }
 };
 </script>
 
 <style>
+img.loading-img {
+    width: 38em !important;
+    left: -4em;
+    top: 20em;
+}
     .main-body {
         position: relative;
     }
@@ -284,7 +270,7 @@ export default {
         padding-left: 0;
     }
     .searchArea {
-        margin-top: -20px;
+        margin-top: -2em !important;
         background: white;
         border-top-left-radius: 20px;
         border-top-right-radius: 20px;

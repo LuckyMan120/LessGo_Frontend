@@ -14,7 +14,7 @@
                 <path id="card_back-2" data-name="card back" d="M1471.025-566.4H1267a14.9,14.9,0,0,1-10.607-4.393A14.9,14.9,0,0,1,1252-581.405v-178a14.9,14.9,0,0,1,4.393-10.606A14.9,14.9,0,0,1,1267-774.405h204.011c-.007.129-.011.265-.011.405a7.008,7.008,0,0,0,7,7,7.008,7.008,0,0,0,7-7c0-.135,0-.271-.011-.405H1595a14.9,14.9,0,0,1,10.607,4.393A14.9,14.9,0,0,1,1610-759.406v178a14.9,14.9,0,0,1-4.393,10.607A14.9,14.9,0,0,1,1595-566.405H1484.975c.016-.192.025-.392.025-.595a7.008,7.008,0,0,0-7-7,7.008,7.008,0,0,0-7,7c0,.2.008.4.025.595Z" transform="translate(-1222 799.41)" fill="#fff"/>
             </g>
         </svg>
-        <div class="trip-board">
+        <div class="trip-board" style="width: 86% !important">
             <!-- left -->
             <div class="col-xs-16" style="padding-right: 20px !important">
                 <div style="display: flex;">
@@ -157,7 +157,7 @@ export default {
             manager_type: null,
             seat_price: '',
             used_seat: null
-        }
+        };
     },
     props: {
         data: {
@@ -190,8 +190,6 @@ export default {
         this.redRating = [];
         this.greyRating = [];
         this.no_review = false;
-        
-        let tripData = this.data;
 
         // rating count
         let totalRating = this.user.positive_ratings + this.user.negative_ratings;
@@ -207,36 +205,55 @@ export default {
             this.no_review = true;
         }
 
-        // month and day
-        this.rideMonth = months[moment(this.data.trip_date.split(' ')[0]).toDate().getMonth()];
-        this.rideDay = moment(this.data.trip_date.split(' ')[0]).toDate().getDate() + 1;
-
-        // time
-        let hourMinute = this.data.trip_date.split(' ')[1];
-        let splitTime = hourMinute.split(':');
-        if (splitTime[0] % 12 !== 0) {
-            if (splitTime[0] > 12) {
-                this.rideTime = (splitTime[0] % 12) + ':' + splitTime[1] + ' PM';
+        // search weekly trip or others
+        if (this.data.days === '') {
+            // month, day and time
+            this.rideMonth = months[moment(this.data.trip_date.split(' ')[0]).toDate().getMonth()];
+            this.rideDay = moment(this.data.trip_date.split(' ')[0]).toDate().getDate();
+            let hourMinute = this.data.trip_date.split(' ')[1];
+            let splitTime = hourMinute.split(':');
+            if (splitTime[0] % 12 !== 0) {
+                if (splitTime[0] > 12) {
+                    this.rideTime = (splitTime[0] % 12) + ':' + splitTime[1] + ' PM';
+                } else {
+                    this.rideTime = splitTime[0] + ':' + splitTime[1] + ' AM';
+                }
             } else {
-                this.rideTime = splitTime[0] + ':' + splitTime[1] + ' AM';
+                if (splitTime[0] === 12) {
+                    this.rideTime = '12:' + splitTime[1] + ' AM';
+                } else {
+                    this.rideTime = '12:' + splitTime[1] + ' PM';
+                }
             }
         } else {
-            if (splitTime[0] === 12) {
-                this.rideTime = '12:' + splitTime[1] + ' AM';
+            this.rideDay = 'Every';
+            this.rideMonth = this.data.days;
+            let hour = this.data.trip_date.split(' ')[1];
+            let splitTime = hour.split(':');
+            if (splitTime[0] % 12 !== 0) {
+                if (splitTime[0] > 12) {
+                    this.rideTime = (splitTime[0] % 12) + ':' + splitTime[1] + ' PM';
+                } else {
+                    this.rideTime = splitTime[0] + ':' + splitTime[1] + ' AM';
+                }
             } else {
-                this.rideTime = '12:' + splitTime[1] + ' PM';
+                if (splitTime[0] === 12) {
+                    this.rideTime = '12:' + splitTime[1] + ' AM';
+                } else {
+                    this.rideTime = '12:' + splitTime[1] + ' PM';
+                }
             }
         }
 
         // trip details
-        this.driver_name = this.user.name;
-        this.driver_img = this.user.image;
+        this.driver_name = this.data.user.name;
+        this.driver_img = this.data.user.image;
         this.from_town = this.data.from_town;
         this.to_town = this.data.to_town;
         this.car_type = this.user.cartype;
         this.manager_type = this.data.friendship_type_id;
-        this.seat_price = 4;
-        this.used_seat = this.data.total_seats;
+        this.seat_price = this.data.payment;
+        this.used_seat = this.data.seats_available;
     },
     computed: {
         ...mapGetters({
@@ -264,5 +281,5 @@ export default {
         seatIcon,
         alignInfoIcon
     }
-}
+};
 </script>

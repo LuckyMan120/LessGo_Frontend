@@ -17,7 +17,7 @@
             </div>
             <p slot="no-data" class="alert alert-warning"  role="alert">No notifications</p>
             <p slot="loading" class="alert alert-info" role="alert">
-                <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                 Loading notifications ...
             </p>
         </Loading>
@@ -73,8 +73,9 @@ export default {
         })
     },
 
-    mounted () {
-        this.search(true);
+    async mounted () {
+        await this.search(true);
+        console.log('notifications', this.notifications);
     },
 
     components: {

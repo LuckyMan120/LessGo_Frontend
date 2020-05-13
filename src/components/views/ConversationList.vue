@@ -34,7 +34,7 @@
                             </li>
                             <li slot="no-data" class="list-group-item alert alert-warning conversations"  role="alert">No Conversations ...</li>
                             <li slot="loading" class="list-group-item alert alert-info converations-loading" role="alert">
-                                <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                                <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                                 Loading conversations ...
                             </li>
                         </Loading>
@@ -109,6 +109,7 @@ export default {
         },
 
         createConversation (user) {
+            console.log('createConversation', this.users);
             this.create(user).then((c) => {
                 this.textSearch = '';
                 this.clear();
@@ -140,6 +141,8 @@ export default {
             }
         },
         textSearch: function (newValue, oldValue) {
+            console.log('textSearch', newValue);
+            console.log('textSearch', oldValue);
             if (oldValue.length === 0 && newValue.length > 0) {
                 this.clear();
             }

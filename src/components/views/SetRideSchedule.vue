@@ -53,6 +53,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import dialogs from '../../services/dialogs.js';
+import moment from 'moment';
 
 /* import components for this */
 import closeIcon from '../../icon/CloseIcon.vue';
@@ -84,7 +85,8 @@ export default {
             tripdate: '',
             triptime: {},
             areaError: new Error(),
-            tripError: new Error()
+            tripError: new Error(),
+            specific: null
         }
     },
     computed: {
@@ -94,21 +96,47 @@ export default {
     },
     methods: {
         nextOffer: function () {
-            if (this.validate()) {
+            switch (this.compareKey) {
+            case 1:
+                let weekData = {
+                    'areas': this.areas,
+                    'tripMode': this.rideType,
+                    'rideMode': this.rideTitle,
+                    'days': this.specific
+                };
+
+                this.$router.push({name: 'postRide', params: { data: weekData }});
+                break;
+            case 2:
+                let specificData = {
+                    'areas': this.areas,
+                    'tripMode': this.rideType,
+                    'rideMode': this.rideTitle,
+                    'days': this.specific
+                };
+
+                this.$router.push({name: 'postRide', params: { data: specificData }});
+                break;
+            case 3:
+                if (this.validate()) {
                 dialogs.message('You must correct or complete some fields to complete your ride.', { duration: 10, state: 'error' });
                 return;
-            }
+                }
 
-            let data = {
-                'tripTime': {
-                    'time': this.triptime,
-                    'date': this.tripdate
-                },
-                'areas': this.areas,
-                'tripMode': this.rideType,
-                'rideMode': this.rideTitle
-            };
-            this.$router.push({name: 'postRide', params: {data}});
+                let data = {
+                    'tripTime': {
+                        'time': this.triptime,
+                        'date': this.tripdate
+                    },
+                    'areas': this.areas,
+                    'tripMode': this.rideType,
+                    'rideMode': this.rideTitle
+                };
+                this.$router.push({name: 'postRide', params: {data}});
+                break;
+            default:
+                break;
+            }
         },
         validate: function () {
             let globalError = false;
@@ -189,26 +217,92 @@ export default {
             this.areas = areas;
         },
         getData: function (data) {
-            this.tripError.state = false;
-            console.log('data', data);
-            // initialize triptime by trip method
-            if (this.sessionRideType !== this.rideType) {
-                this.triptime = {};
-            }
-
-            // save trip date and time
-            if (data.title === 'date') {
-                this.tripdate = data.date;
-            } else {
-                if (this.rideType === 'single') {
-                    this.triptime['time'] = data.time;
+            switch (this.compareKey) {
+            case 1:
+                let compareWeekDate = '';
+                let weeklyData = [];
+                let newWeekDate = {};
+                if (this.rideTypeFlag) {
+                    data.forEach(item => {
+                        if (item.day !== compareWeekDate) {
+                            compareWeekDate = item.day;
+                            data.forEach(value => {
+                                if (compareWeekDate === value.day) {
+                                    newWeekDate['day'] = compareWeekDate;
+                                    newWeekDate[value.type] = value.time;
+                                }
+                            });
+                            weeklyData.push(newWeekDate);
+                            newWeekDate = {};
+                        }
+                    });
+                    this.specific = weeklyData;
                 } else {
-                    this.triptime[data.type] = data.time;
-                }
-            }
+                    data.forEach(item => {
+                        let newWeekDate = {};
+                        newWeekDate['day'] = item.day;
+                        newWeekDate[item.type] = item.time;
 
-            this.sessionRideType = this.rideType;
-            console.log('triptime', this.triptime);
+                        weeklyData.push(newWeekDate);
+                    });
+                    this.specific = weeklyData;
+                }
+                break;
+            case 2:
+                let compareDate = '';
+                let specificData = [];
+                let newDate = {};
+                if (this.rideTypeFlag) {
+                    data.forEach(item => {
+                        if (item.day !== compareDate) {
+                            compareDate = item.day;
+                            data.forEach(value => {
+                                if (compareDate === value.day) {
+                                    newDate['day'] = compareDate;
+                                    newDate[value.type] = value.time;
+                                    newDate['realDay'] = item.realFormatDate;
+                                }
+                            });
+                            specificData.push(newDate);
+                            newDate = {};
+                        }
+                    });
+                    this.specific = specificData;
+                } else {
+                    data.forEach(item => {
+                        let newDate = {};
+                        newDate['day'] = item.day;
+                        newDate['realDay'] = item.realFormatDate;
+                        newDate[item.type] = item.time;
+
+                        specificData.push(newDate);
+                    });
+                    this.specific = specificData;
+                }
+                break;
+            case 3:
+                // initialize triptime by trip method
+                if (this.sessionRideType !== this.rideType) {
+                    this.triptime = {};
+                }
+
+                // save trip date and time
+                if (data.title === 'date') {
+                    this.tripdate = data.date;
+                } else {
+                    if (this.rideType === 'single') {
+                        this.triptime['time'] = data.time;
+                    } else {
+                        this.triptime[data.type] = data.time;
+                    }
+                }
+
+                this.sessionRideType = this.rideType;
+                break;
+            default:
+                break;
+            }
+            this.tripError.state = false;
         }
     },
     components: {

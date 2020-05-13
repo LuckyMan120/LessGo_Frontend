@@ -72,9 +72,9 @@ export default {
                     this.settingFlag = false;
                     break;
                 case 'security':
-                    this.$router.push({name: 'security'});
-                    this.reverse(false);
-                    this.settingFlag = false;
+                    // this.$router.push({name: 'security'});
+                    // this.reverse(false);
+                    // this.settingFlag = false;
                     break;
                 case 'about':
                     this.$router.push({name: 'about'});

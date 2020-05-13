@@ -2,12 +2,12 @@
     <div class="driver-detail">
         <div>
             <div class="driver-detail-area">
-                <closeIcon :size="10" :classes="'close-message'" />
+                <closeIcon :size="10" :classes="'close-message'" title="yourTrips" />
             </div>
 
             <!-- driver ticket -->
             <div class="driver-ticket">
-                <TripTicket :joinFlag="true" :data="tripDetail" />
+                <TripTicket :data="tripDetail" />
             </div>
 
             <!-- map -->
@@ -39,24 +39,24 @@
                     
                     <!-- preferences -->
                     <h3>PREFERENCES</h3>
-                    <preferences :data="preferences" />
+                    <detailPreferences :data="preferences" />
                     
                     <!-- amenties -->
                     <h3>AMENTIES</h3>
-                    <amenties :data="amenities" />
+                    <detailAmenities :data="amenities" />
 
                     <!-- passengers -->
                     <h3>PASSENGERS</h3>
                     <div class="details-body-common">
                         <div v-for="passenger in passengers" class="details-body-common-area">
-                            <div v-imgSrc:src="passenger.passenger_avatar   " :class="'img-circle'"></div>
-                            <p>{{ passenger.passenger_name }}</p>
+                            <div v-imgSrc:profile="passenger.image" :class="'img-circle'"></div>
+                            <p>{{ passenger.name }}</p>
                         </div>
-                        <div class="details-body-common-area">
+                        <div v-for="seat in availableSeats" class="details-body-common-area">
                             <div :class="'img-circle'">
                                 <greySeatIcon :size="25" :class="'free-seat'" />
                             </div>
-                            <p style="margin-top: 10px;">name</p>
+                            <p style="margin-top: 10px;">available</p>
                         </div>
                     </div>
 
@@ -73,16 +73,21 @@
             </div>
                 
             <!-- button area -->
-            <div v-if="!zoomFlag" class="button-area">
-                <button class="offer-ride" @click="editTrip">
-                    <carIcon :size="15" :color="'white'" />
-                    <span>Edit</span>
+            <div v-if="!zoomFlag" class="button-area trip-info-btns">
+                <button v-if="keyWord === 'driver'" @click="editTrip">
+                    Edit
                 </button>
-                <button class="share-btn" @click="deleteTrip" :disabled="sending">
-                    <shareIcon :size="15" :color="'#000000'" />
-                    <span>
-                        Delete
-                    </span>
+                <button v-if="keyWord === 'driver'" @click="deleteTrip" :disabled="sending">
+                    Cancel Trip
+                </button>
+                <button v-if="keyWord === 'passenger'" @click="tripOff">
+                    Trip Off
+                </button>
+                <button v-if="keyWord === 'passenger'" @click="save">
+                    Save
+                </button>
+                <button style="background: #9CD076" v-if="keyWord === 'history'" @click="back">
+                    Back
                 </button>
             </div>
         </div>
@@ -97,13 +102,9 @@ import closeIcon from '../../icon/CloseIcon';
 import TripTicket from '../sections/TripTicket';
 import arrowDownIcon from '../../icon/ArrowDownIcon';
 import greySeatIcon from '../../icon/GreySeatIcon';
-import shareIcon from '../../icon/ShareIcon';
-import carIcon from '../../icon/CarIcon';
-import preferences from '../sections/Preferences'
-import amenties from '../sections/Amenties';
-
-// import json for test
-import json from '../../jsons/searchTrips.json';
+import detailAmenities from '../sections/DetailAmenities';
+import detailPreferences from '../sections/DetailPreferences';
+import dialogs from '../../services/dialogs.js';
 
 export default {
     name: 'tripInfo',
@@ -127,7 +128,9 @@ export default {
             to_town_latlng: null,
             estimated_time: '',
             CO2: '',
-            sending: false
+            sending: false,
+            availableSeats: [],
+            keyWord: this.data.keyWord
         }
     },
     computed: {
@@ -138,12 +141,30 @@ export default {
     mounted () {
         console.log('mounted', this.data);
         this.tripDetail = this.data.trip;
-        console.log('json', json);
 
         // test data from json
-        this.passengers = json.searchTrips[1].passengers;
-        this.preferences = json.searchTrips[1].trips.preferences;
-        this.amenities = json.searchTrips[1].trips.amenities;
+        this.passengers = this.data.trip.passenger;
+        
+        // set amenities and preferences
+        let amenData = {};
+        amenData['wifi'] = this.data.trip.wifi;
+        amenData['snacks'] = this.data.trip.snacks;
+        amenData['charger'] = this.data.trip.charger;
+        amenData['xcomfort'] = this.data.trip.xcomfort;
+        amenData['aux'] = this.data.trip.aux;
+        amenData['sanitizer'] = this.data.trip.sanitizer;
+
+        this.amenities = amenData;
+
+        let preData = {};
+        preData['is_smoker'] = this.data.trip.is_smoker;
+        preData['pets'] = this.data.trip.pets;
+        preData['food'] = this.data.trip.food;
+        preData['speaking'] = this.data.trip.speaking;
+        preData['luggage'] = this.data.trip.luggage;
+        preData['protection'] = this.data.trip.protection;
+
+        this.preferences = preData;
 
         // draw route
         let fromLatlng = {
@@ -157,14 +178,41 @@ export default {
         };
         this.drawRoute(fromLatlng, toLatlng);
 
+        // set available seats
+        for (let i = 0; i < this.data.trip.seats_available; i++) {
+            this.availableSeats.push(i);
+        }
+
         // // set time format
         // let time = this.data.trip.estimated_time.split(':');
         // this.estimated_time = parseInt(time[0]) + 'h' + parseInt(time[1]) + 'm';
     },
     methods: {
         ...mapActions({
-            remove: 'trips/remove'
+            remove: 'trips/remove',
+            cancel: 'passenger/cancel'
         }),
+        tripOff: function () {
+            if (window.confirm('Are you sure you want to get off the trip?')) {
+                this.cancel({ user: this.data.user, trip: this.data.trip }).then(() => {
+                    dialogs.message('You have come down from the trip.');
+                    if (this.data.trip.request !== 'send') {
+                        let index = this.data.trip.passenger.findIndex(item => item.id === this.data.user.id);
+                        this.data.trip.passenger.splice(index, 1);
+                    } else {
+                        this.data.trip.request = '';
+                    }
+                }).catch(() => {
+                    // this.sending = false;
+                });
+            }
+        },
+        save: function () {
+
+        },
+        back: function () {
+            this.$router.push({name: 'your-trips'});
+        },
         editTrip: function () {
             // this.$router.push({name: ''})
         },
@@ -245,10 +293,8 @@ export default {
         TripTicket,
         arrowDownIcon,
         greySeatIcon,
-        shareIcon,
-        carIcon,
-        preferences,
-        amenties
+        detailAmenities,
+        detailPreferences
     }
 }
 </script>

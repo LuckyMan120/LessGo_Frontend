@@ -41,7 +41,7 @@ export default {
             today.setMinutes(0);
             today.setSeconds(0);
             if (moment(this.message.created_at)._d < today) {
-                return moment(this.message.created_at).format('HH:mm a, ddd DD MMM');
+                return moment(this.message.created_at).format('H:mm A, ddd DD MMM');
             }
             return moment(this.message.created_at).format('LT');
         },
@@ -57,3 +57,17 @@ export default {
     ]
 };
 </script>
+
+<style>
+.message {
+    border-radius: 25px 25px 25px 5px;
+    font-family: Avenir !important;
+    box-shadow: 0 0 10px lightgrey;
+}
+.message-wrapper-me {
+    border-radius: 10px 10px 3px 10px !important;
+}
+.message_text {
+    font-family: Avenir;
+}
+</style>

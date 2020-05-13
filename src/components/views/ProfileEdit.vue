@@ -35,10 +35,10 @@
             <span class="error" v-if="descriptionError.state"> {{descriptionError.message}} </span>
 
             <!-- preferences -->
-            <h4>Preferences</h4>
-            <div class="preferences">
-                <preferences :data="preferences" offerFlag="true" />    
-            </div>
+            <!-- <h4>Preferences</h4> -->
+            <!-- <div class="preferences">
+                <preferences :data="preferences" :offerFlag="true" />    
+            </div> -->
 
             <!-- contact and identification -->
             <h4>Contact and identification</h4>
@@ -110,7 +110,7 @@
                         <span style="margin: 0">Save</span>
                         <spinner v-if="loading" class="loading" />
                     </button>
-                    <button @click="goBack" class="share-btn">
+                    <button @click="goBack" class="share-btn" style="display: block !important;">
                         <span style="margin: 0">
                             Back
                         </span>
@@ -132,11 +132,8 @@ import { inputIsNumber } from '../../services/utility';
 
 // import components for this
 import ratingStarIcon from '../../icon/RatingStarIcon';
-import preferences from '../sections/Preferences';
+// import preferences from '../sections/Preferences';
 import uploadfile from '../Uploadfile';
-
-// import json for this
-import profileEditJson from '../../jsons/profile.json';
 
 class Error {
     constructor (state = false, message = '') {
@@ -155,14 +152,12 @@ export default {
         return {
             userData: null,
             car: null,
-            detail: profileEditJson.profile,
             redRating: [],
             greyRating: [],
             no_review: false,
             bio_count: 0,
             description: '',
             text_counter: 150,
-            preferences: profileEditJson.profile.preferences,
             showPasswordField: false,
             password: '',
             confirm: '',
@@ -204,7 +199,7 @@ export default {
             inputIsNumber(value);
         },
         resetPassword: function () {
-            this.showPasswordField = true;
+            this.showPasswordField = !this.showPasswordField;
         },
         goBack: function () {
             this.$router.push({name: 'profileDetail', params: {id: 'me'}});
@@ -221,7 +216,7 @@ export default {
             this.userData.cartype = this.carModel;
             this.userData.description = this.description;
 
-            if (this.password) {
+            if (this.password || this.confirm) {
                 if (this.password !== this.confirm) {
                     this.passwordError.state = true;
                     this.passwordError.message = 'Password does not match.';
@@ -237,7 +232,6 @@ export default {
                 this.password = '';
                 this.confirm = '';
                 this.loading = false;
-                dialogs.message('Profile updated completely.');
                 if (this.plateNumber.length) {
                     if (this.car) {
                         this.car.patente = this.plateNumber;
@@ -251,6 +245,7 @@ export default {
                     }
                 }
                 if ((this.user.image && this.user.image.length > 0) && (this.user.description && this.user.description.length > 0)) {
+                    dialogs.message('Profile updated completely.');
                     this.$router.push({name: 'main'});
                 } else {
                     if (!(this.user.image && this.user.image.length > 0)) {
@@ -369,24 +364,25 @@ export default {
         this.userData = this.user;
         this.redRating = [];
         this.greyRating = [];
-        let profileData = profileEditJson.profile;
         
         // rating count
-        if (profileData.reviews !== 0) {
-            for (let i = 0; i < profileData.reviews; i++) {
+        if ((this.user.positive_ratings + this.user.negative_ratings) === 0) {
+            this.no_review = true;
+        } else {
+            // red rating count
+            for (let i = 0; i < this.user.positive_ratings; i++) {
                 this.redRating.push(i);
             }
 
-            for (let j = 0; j < (totalCount - profileData.reviews); j++) {
-                this.greyRating.push(j);
+            // grey rating count
+            for (let i = 0; i < this.user.negative_ratings; i++) {
+                this.redRating.push(i);
             }
-        } else {
-            this.no_review = true;
         }
 
         // details
         this.description = this.user.description;
-        this.preferences = profileData.preferences;
+        // this.preferences = profileData.preferences;
         this.phoneNumber = this.user.mobile_phone;
         this.carModel = this.user.cartype;
         this.plateNumber = this.cars[0].patente;
@@ -396,7 +392,7 @@ export default {
     },
     components: {
         ratingStarIcon,
-        preferences,
+        // preferences,
         uploadfile,
         spinner
     }

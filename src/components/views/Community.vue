@@ -8,7 +8,7 @@
 
                 <!-- search community -->
                 <div class="search-conversation">
-                    <searchIcon :size="15" :color="'#c5c6cb'" />
+                    <v-icon icon="search" class="v-icons-message" style="width: 15px !important; height: 15px; margin-top: 4px" />
                     <input @keyup="onChange" type="text" name="" placeholder="Search communities" />
                 </div>
             </div>
@@ -16,10 +16,10 @@
             <!-- communities -->
             <div class="communities-area">
                 <div v-for="(community, index) in communities" :key="index" class="community-content">
-                    <div class="img-circle" v-imgSrc:src="community.img"></div>
+                    <!-- <div class="img-circle" :style="{'background': 'url(' + bank_img + ')'}"></div> -->
+                    <div class="img-circle" :style="{'background': 'url(' + community.img_url + ')'}"></div>
                     <div class="community-detail">
                         <h3>{{ community.name }}</h3>
-                        <span>{{ community.title }}</span>
                     </div>
                     <button type="button" @click="showCommunityBoard(community.id)">Join</button>
                 </div>
@@ -34,7 +34,6 @@
 <script>
 // import components for this
 import closeIcon from '../../icon/CloseIcon.vue';
-import searchIcon from '../../icon/SearchIcon.vue';
 import joinCommunity from '../sections/JoinCommunity.vue';
 
 // import json for this
@@ -48,7 +47,15 @@ export default {
             sourceData: communityJson.communities,
             showCommunityFlag: false,
             boardData: {},
+            bank_img: process.env.ROUTE_BASE + 'static/img/bank.png',
             filterFlag: false
+        }
+    },
+    props: {
+        status: {
+            type: String,
+            required: false,
+            default: ''
         }
     },
     methods: {
@@ -57,7 +64,10 @@ export default {
                 if (obj.id === id) {
                     this.showCommunityFlag = true;
                     this.filterFlag = true;
-                    this.boardData = obj;
+
+                    let data = obj;
+                    data['signStatus'] = this.status;
+                    this.boardData = data;
                 }
             });
         },
@@ -78,7 +88,6 @@ export default {
     },
     components: {
         closeIcon,
-        searchIcon,
         joinCommunity
     }
 };

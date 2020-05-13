@@ -10,8 +10,8 @@ export default {
     name: 'scheduleBtn',
     data () {
         return {
-            reverseBk: false    
-        }
+            reverseBk: false
+        };
     },
     props: {
         title: {

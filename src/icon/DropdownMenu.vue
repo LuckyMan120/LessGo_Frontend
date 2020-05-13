@@ -18,7 +18,7 @@
                 <!-- profile -->
                 <div class="col-xs-8">
                     <router-link :to="{name: 'profileDetail', params: { id: 'me'}}">
-                        <div class="common-btns" v-imgSrc:src="profileImg"></div>
+                        <div class="common-btns" v-imgSrc:profile="user.image"></div>
                     </router-link>
                     <span>Profile</span>
                 </div>
@@ -87,9 +87,8 @@ export default {
     data () {
         return {
             showMenu: false,
-            profileImg: null,
             fillColor: '#eb5557'
-        }
+        };
     },
     methods: {
         toggleMenu: function () {
@@ -100,16 +99,7 @@ export default {
     computed: {
         ...mapGetters({
             user: 'auth/user'
-        }),
-        setProfileImg: function () {
-            console.log('user', this.user);
-            this.profileImg = '/image/profile/' + this.user.image;
-        }
-    },
-    watch: {
-        setProfileImg: function () {
-
-        }
+        })
     },
     components: {
         mdbDropdown,

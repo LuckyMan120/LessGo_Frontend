@@ -8,19 +8,22 @@ let carApi = new CarApi();
 
 const state = {
     cars: null,
-    detail: null
+    detail: null,
+    all_cars: null
 };
 
 // getters
 const getters = {
     cars: state => state.cars,
-    getDetail: state => state.detail
+    getDetail: state => state.detail,
+    allCars: state => state.all_cars
 };
 
 // actions
 const actions = {
     index (store, data = {}) {
         return carApi.index(data).then(response => {
+            console.log('cars', response.data);
             store.commit(types.CARS_SET, response.cars ? response.cars : []);
         }).catch(err => {
             console.log(err);
@@ -67,6 +70,17 @@ const actions = {
 
     initDetail (store) {
         store.commit(types.INIT_DETAIL);
+    },
+
+    showCars (store, id) {
+        return carApi.show(id).then(response => {
+            store.commit(types.SET_ALL_CARS, response.data);
+            return Promise.resolve();
+        }).catch(err => {
+            if (err) {
+                return Promise.reject(err);
+            }
+        });
     }
 };
 
@@ -75,12 +89,14 @@ const mutations = {
     [types.CARS_SET] (state, items) {
         state.cars = items;
     },
+
     [types.CARS_ADD] (state, car) {
         if (!state.cars) {
             state.cars = [];
         }
         state.cars.push(car);
     },
+
     [types.CARS_UPDATE] (state, car) {
         for (let i = 0; i < state.cars.length; i++) {
             if (state.cars[i].id === car.id) {
@@ -88,14 +104,21 @@ const mutations = {
             }
         }
     },
+
     [types.CARS_DELETE] (state, car) {
         state.cars = state.cars.filter(item => item.id === car.id);
     },
+
     [types.SAVE_CAR_AND_ID] (state, data) {
         state.detail = data;
     },
+
     [types.INIT_DETAIL] (state) {
         state.detail = null;
+    },
+
+    [types.SET_ALL_CARS] (state, data) {
+        state.all_cars = data;
     }
 };
 

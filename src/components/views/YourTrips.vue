@@ -2,13 +2,15 @@
     <div class="your-trips">
         <!-- trip header -->
         <div class="messages-area">
-            <closeIcon :size="12" :classes="'close-message'" />
+            <closeIcon :size="12" :classes="'close-message'" style="top: 0 !important;" />
 
             <!-- title -->
             <div class="trip-title">
-                <div @click="setTitle('upcoming')" class="col-xs-12 text-center" style="display: flex; justify-content: center;">
+                <div @click="setTitle('upcoming')" class="col-xs-12 text-center count-circle">
                     <span :style="setUpcoming? 'color: black': 'color: #a3a3a7'">UPCOMING</span>
-                    <oneNumberIcon :size="15" :color="setUpcoming? '#eb5557' : '#f1a3a3'" style="margin-left: 7px; margin-bottom: 3px" />
+                    <div v-if="count !== 0" class="upcoming-count" :style="setUpcoming? 'opacity: 1': 'opacity: .7'">
+                        <span>{{ count }}</span>
+                    </div>
                 </div>
                 <div @click="setTitle('history')" class="col-xs-12 text-center">
                     <span :style="setHistory? 'color: black': 'color: #a3a3a7'">HISTORY</span>
@@ -35,14 +37,14 @@
                 <!-- trip detail -->
                 <!-- as passenger -->
                 <div class="animation-div" v-if="selPassenger">
-                    <tripDetail v-for="data in upcomingPassengerData" :data="data" />
+                    <tripDetail v-for="data in upcomingPassengerData" :trip="data" :user="user" :tripActiveFlag="true" keyWord="passenger" />
                     <!-- after trip -->
                     <Loading :data="laterPassengerData">
                         <span class="divide-trip">Later Rides</span>   
-                        <tripDetail v-for="data in laterPassengerData" :data="data" />
+                        <tripDetail v-for="data in laterPassengerData" :trip="data" :user="user" keyWord="passenger" />
                         <p slot="no-data" class="alert alert-warning"  role="alert">You Don't have any trips joined as passenger</p>
                         <p slot="loading" class="alert alert-info" role="alert">
-                            <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                            <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                             Loading trips ...
                         </p>
                     </Loading>
@@ -50,14 +52,14 @@
                 
                 <!-- as driver -->
                 <div class="driver-animation-div" v-if="selDriver">
-                    <tripDetail v-for="data in upcomingDriverData" :data="data" :tripActiveFlag="true" />
+                    <tripDetail v-for="data in upcomingDriverData" :trip="data" :user="user" :tripActiveFlag="true" keyWord="driver" />
                     <!-- after trip -->
                     <Loading :data="laterDriverData">
                         <span class="divide-trip">Later Rides</span>
-                        <tripDetail v-for="data in laterDriverData" :data="data" />
-                        <p slot="no-data" class="alert alert-warning"  role="alert">You Don't have any trips created</p>
+                        <tripDetail v-for="data in laterDriverData" :trip="data" :user="user" keyWord="driver" />
+                        <p slot="no-data" class="alert alert-warning"  role="alert">You Don't have any trips created as driver</p>
                         <p slot="loading" class="alert alert-info" role="alert">
-                            <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                            <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                             Loading trips ...
                         </p>
                     </Loading>
@@ -67,10 +69,10 @@
             <!-- history area -->
             <div v-else="setHistory" class="history-area animation-div">
                 <Loading :data="historyData">
-                    <tripDetail v-for="data in historyData" :data="data" />
+                    <tripDetail v-for="data in historyData" :trip="data" :user="user" keyWord="history" />
                     <p slot="no-data" class="alert alert-warning"  role="alert">You Don't have any history trips</p>
                     <p slot="loading" class="alert alert-info" role="alert">
-                        <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                        <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                         Loading trips ...
                     </p>
                 </Loading>
@@ -87,7 +89,6 @@ import ProfileTicket from '../views/ProfileTicket';
 
 // import components for this
 import closeIcon from '../../icon/CloseIcon.vue';
-import oneNumberIcon from '../../icon/OneNumberIcon.vue';
 import carIcon from '../../icon/CarIcon.vue';
 import userIcon from '../../icon/UserIcon.vue';
 import tripDetail from '../sections/TripDetail.vue';
@@ -108,7 +109,8 @@ export default {
             setUpcoming: true,
             setHistory: false,
             selPassenger: true,
-            selDriver: false
+            selDriver: false,
+            count: 0
         };
     },
     async mounted () {
@@ -120,17 +122,37 @@ export default {
         await this.oldTripsAsPassenger();
         await this.findSubscriptions();
 
-        this.trips.forEach(trip => {
-            console.log('trips', trip);
-        });
+        console.log('trips', this.trips);
+        console.log('passengerTrips', this.passengerTrips);
+        console.log('subscriptions', this.subscriptions);
         if (this.trips.length !== 0) {
-            // active trip as driver
             let driverTrip = [];
-            driverTrip.push(this.trips[0]);
-            this.upcomingDriverData = driverTrip;
+            let upcomingDriverTrip = [];
 
-            // later trips as driver
-            this.laterDriverData = this.trips.splice(1, this.trips.length - 1);    
+            this.trips.forEach(trip => {
+                if (trip.availability === 'true') { // active driver trip
+                    driverTrip.push(trip);
+                } else { // later driver trips
+                    if (upcomingDriverTrip.length === 0) {
+                        trip['start_available'] = true;
+                    } else {
+                        trip['start_available'] = false;
+                    }
+                    upcomingDriverTrip.push(trip);
+                }
+            });
+
+            this.upcomingDriverData = driverTrip;
+            if (driverTrip.length !== 0) {
+                upcomingDriverTrip.forEach(trip => {
+                    trip['active_available'] = false;
+                });
+            } else {
+                upcomingDriverTrip.forEach(trip => {
+                    trip['active_available'] = true;
+                });
+            }
+            this.laterDriverData = upcomingDriverTrip;    
         } else {
             this.upcomingDriverData = [];
             this.laterDriverData = [];
@@ -152,13 +174,25 @@ export default {
         }
 
         if (this.passengerTrips.length !== 0) {
-            // active trip as passenger
             let passTrip = [];
-            passTrip.push(this.passengerTrips[0]);
-            this.upcomingPassengerData = passTrip;
+            let allPassTrip = [];
 
-            // later trips as passenger
-            this.laterPassengerData = this.passengerTrips.splice(1, this.passengerTrips.length - 1);
+            this.passengerTrips.forEach(trip => {
+                if (trip.availability === 'true') { // active passenger trip
+                    passTrip.push(trip);
+                } else { // later passenger trips
+                    if (allPassTrip.length === 0) {
+                        trip['start_available'] = true;
+                    } else {
+                        trip['start_available'] = false;
+                    }
+                    allPassTrip.push(trip);
+                }
+            });
+
+            this.count = allPassTrip.length;
+            this.upcomingPassengerData = passTrip;
+            this.laterPassengerData = allPassTrip;
         } else {
             this.upcomingPassengerData = [];
             this.laterPassengerData = [];
@@ -187,6 +221,14 @@ export default {
             oldTripsAsPassenger: 'myTrips/oldTripsAsPassenger',
             findSubscriptions: 'subscriptions/index'
         }),
+        goDetail: function (data) {
+            console.log('data', data);
+            this.setSelectedTrip(data);
+
+            // go search result page
+            let status = 'popular';
+            this.$router.push({name: 'searchResult', params: { data: data, status: status }});
+        },
         setTitle: function (type) {
             if (type === 'upcoming') {
                 this.setUpcoming = true;
@@ -200,15 +242,27 @@ export default {
             if (item === 'passenger') {
                 this.selPassenger = true;
                 this.selDriver = false;
+                this.count = this.laterPassengerData.length;
             } else {
                 this.selPassenger = false;
                 this.selDriver = true;
+                this.count = this.laterDriverData.length;
+            }
+        },
+        moreDetail: function (title) {
+            if (title === 'info') {
+                console.log('driverData', this.driverData);
+                let name = this.driverData.user.name;
+                let newName = name.replace(/ /gi, '');
+                this.setSelectedTrip(this.driverData);
+                this.$emit('driver-detail', newName);
+            } else {
+                this.$emit('join');
             }
         }
     },
     components: {
         closeIcon,
-        oneNumberIcon,
         carIcon,
         userIcon,
         tripDetail,

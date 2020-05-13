@@ -78,7 +78,7 @@ id="parentcontainer">
         </div>
             </div>
             <p slot="loading"  role="alert">
-                <img src="/static/img/loader.gif" alt="" class="ajax-loader" />
+                <img src="/static/svg/loaderr.gif" alt="" class="ajax-loader" />
                 Loading ratings ...
             </p>
         </Loading>
@@ -467,8 +467,8 @@ ul.nav.nav-tabs.active-1 {
     display: none !important;
 }
 .alert-warning {
-    background-color: transparent;
-    border-color: transparent;
-    color: #8a6d3b;
+  background-color: #eb5557;
+    border-color: #faebcc;
+    color: #ffffff;
 }
 </style>

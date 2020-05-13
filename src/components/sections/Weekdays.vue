@@ -17,6 +17,8 @@
 </template>
 
 <script>
+import moment from 'moment';
+
 // import components for this
 import scheduleArea from '../elements/ScheduleArea';
 
@@ -39,7 +41,7 @@ export default {
             rideData: [],
             tripType: false,
             rideTypeFlag: false
-        }
+        };
     },
     methods: {
         weekSelect: function (item) {
@@ -50,7 +52,7 @@ export default {
                         let weekdata = {
                             day: item,
                             id: i
-                        }
+                        };
                         let outFlag = false;
                         if (this.rideData.length === 0) {
                             this.rideData.push(weekdata);
@@ -78,7 +80,40 @@ export default {
         },
         getData: function (data) {
             this.rideData = data;
-            this.$emit('get-data', data);
+            let formatTime = '';
+            let eachData = [];
+
+            // format time
+            data.forEach(item => {
+                Object.keys(item).forEach(param => {
+                    if (param !== 'day' && param !== 'id') {
+                        let time = moment(item[param]).toDate();
+
+                        if (time.getHours().toString().length === 1) {
+                            if (time.getMinutes().toString().length === 1) {
+                                formatTime += '0' + time.getHours() + ':0' + time.getMinutes() + ':00';
+                            } else {
+                                formatTime += '0' + time.getHours() + ':' + time.getMinutes() + ':00';
+                            }
+                        } else {
+                            if (time.getMinutes().toString().length === 1) {
+                                formatTime += time.getHours() + ':0' + time.getMinutes() + ':00';
+                            } else {
+                                formatTime += time.getHours() + ':' + time.getMinutes() + ':00';
+                            }
+                        }
+
+                        let payload = {
+                            day: item.day,
+                            type: param,
+                            time: formatTime
+                        };
+                        eachData.push(payload);
+                        formatTime = '';
+                    }
+                });
+            });
+            this.$emit('get-data', eachData);
         },
         rideMethod: function () {
             this.rideTypeFlag = !this.rideTypeFlag;

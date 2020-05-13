@@ -43,6 +43,13 @@
         <div id="mapRef">
             
         </div>
+        <input type="text" v-model="text" name="" id="area" />
+        <VueSlickCarousel :arrows="true" :dots="true">
+            <div>1</div>
+            <div>2</div>
+            <div>3</div>
+            <div>4</div>
+        </VueSlickCarousel>
         <gmap-map
             :center="center"
             :zoom="12"
@@ -59,7 +66,10 @@
 
 <script>
 // import components for this
-// import * as VueGoogleMaps from 'vue2-google-maps';
+import VueSlickCarousel from 'vue-slick-carousel';
+import 'vue-slick-carousel/dist/vue-slick-carousel.css';
+// optional style for arrows & dots
+import 'vue-slick-carousel/dist/vue-slick-carousel-theme.css';
 
 let rad = function (x) {
     return x * Math.PI / 180;
@@ -79,8 +89,12 @@ export default {
             path: [],
             dirive_distance: '',
             duration: '',
-            co2: ''
+            co2: '',
+            text: ''
         };
+    },
+    components: {
+        VueSlickCarousel
     },
     methods: {
         setPlace: function (place) {
@@ -114,6 +128,10 @@ export default {
             this.center = town;
         },
         setFromtownPlace: function (place) {
+            place.photos.forEach(photo => {
+                console.log('place', photo.getUrl());
+            });
+            console.log(place.vicinity);
             let data = {
                 latlng: {
                     lat: place.geometry.location.lat(),
@@ -179,6 +197,14 @@ export default {
                     VueComp.co2 = parseFloat(parseInt(VueComp.dirive_distance) * 0.15).toFixed(2);
                 }
             });
+        }
+    },
+    watch: {
+        text: function () {
+            console.log('text');
+            var input = document.getElementById('area');
+            var ac = new window.google.maps.places.Autocomplete(input);
+            console.log('ac', ac);
         }
     }
 };

@@ -45,4 +45,4 @@ Respect the following configuration of linting: / * jshint esversion: 6 * /
 The names of the variables and methods are in English
 
 ## Author
-* Kevin Travis (kevintravis120@gmail.com)
+* Khaled Daoudieh (me@khaled.xyz)

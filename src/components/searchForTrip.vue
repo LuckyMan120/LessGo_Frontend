@@ -506,20 +506,20 @@
 
 <script>
 export default {
-  name: 'searchForTrip',
-  data () {
-    return {};
-  },
+    name: 'searchForTrip',
+    data () {
+        return {};
+    },
     props: ['icon', 'size'],
-  computed: {
-      computedSize () {
-        if (!this.size) {
-          return 48;
-        } else {
-          return this.size;
+    computed: {
+        computedSize () {
+            if (!this.size) {
+                return 48;
+            } else {
+                return this.size;
+            }
         }
     }
-  }
 };
 </script>
 

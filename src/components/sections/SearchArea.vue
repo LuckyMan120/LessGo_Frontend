@@ -1,7 +1,7 @@
 <template>
     <div class="searchArea-box">
         <div>
-            <fromIcon :size="15" color="#ABE5C4" />
+            <v-icon :icon="['fa', 'bullseye']" class="v-icon-search" />
             <gmap-autocomplete
                 @place_changed="setFromtownPlace"
                 placeholder="Leaving from"
@@ -9,7 +9,7 @@
             ></gmap-autocomplete>
         </div>
         <div>
-            <toIcon :size="15" color="#ABE5C4" />
+            <v-icon :icon="['fas', 'map-marker-alt']" class="v-icon-search" />
             <gmap-autocomplete
                 @place_changed="setTotownPlace"
                 placeholder="Going to"
@@ -24,9 +24,6 @@
 import fromIcon from '../../icon/FromIcon';
 import toIcon from '../../icon/ToIcon';
 
-let rad = function (x) {
-    return x * Math.PI / 180;
-};
 export default {
     name: 'searchArea',
     data () {
@@ -37,11 +34,13 @@ export default {
             to_town: null,
             distance: '',
             duration: '',
-            co2: ''
-        }
+            co2: '',
+            image_url: ''
+        };
     },
     methods: {
         setFromtownPlace: function (place) {
+            this.image_url = place.photos[0].getUrl();
             this.from_address = place.from_address;
             let data = {
                 address: place.formatted_address,
@@ -133,7 +132,6 @@ export default {
                     let duration = result.routes[0].legs[0].duration.value;
                     let h = Math.floor(duration / 3600);
                     let m = ((duration % 3600) / 60).toFixed();
-                    
                     // format set duration as style 00:00
                     if (h.toString().length < 2) {
                         if (m.toString().length < 2) {
@@ -159,8 +157,9 @@ export default {
                 this.to_town,
                 this.distance,
                 this.duration,
-                this.co2
-            ]
+                this.co2,
+                this.image_url
+            ];
             this.$emit('save-data', areas);
         }
     },

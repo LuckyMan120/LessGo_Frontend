@@ -15,7 +15,7 @@
             </span>
             <div class="car-seat-area">
                 <div class="seat-number">
-                    <greySeatIcon :size="16" :color="'#abe5c4'" />
+                    <img :src="seat_img" />
                     <p>{{ seat_count }}</p>
                 </div>
                 <div @click="selectSeat(-1)" class="car-minus">
@@ -26,16 +26,22 @@
                 </div>
             </div>
 
+            <!-- select preferences area -->
+            <div class="preferences">
+                <span>PREFERENCES</span>
+                <preferences @preference="getPreferences" :offerFlag="true" />    
+            </div>
+
             <!-- select amenities area -->
             <div class="select-amenities">
                 <span>AMENITIES</span>
-                <amenities :offerFlag="true" />
+                <amenities @amenities="getAmenities" :offerFlag="true" />
             </div>
             
             <!-- select usage for female -->
             <div class="female-usage">
                 <v-icon icon="venus" class="usage-female-icon" />
-                <h2>Share this ride with females only</h2>
+                <h2>Share this ride with {{ user.gender }}s only</h2>
                 <switchBtn @toggle="toggleBtn" />
             </div>
 
@@ -57,7 +63,6 @@
             <p>By pressing "Post Ride!" you promise not to profit from trips and divide all expenses equally with passengers.</p>
             <button @click="postRide" class="offer-ride" style="margin-right: 0">
                 <carIcon :size="20" :color="'#D5E9E8'" style="margin-top: -3px;" />
-                <carPlusIcon :size="15" />
                 <span style="color: white">Post ride!</span>
                 <spinner v-if="postFlag" class="loading" />
             </button>
@@ -70,15 +75,16 @@ import { mapGetters, mapActions } from 'vuex';
 import moment from 'moment';
 
 /* import components for this */
-import greySeatIcon from '../../icon/GreySeatIcon';
 import closeIcon from '../../icon/CloseIcon';
-import carPlusIcon from '../../icon/CarPlusIcon';
 import minusIcon from '../../icon/MinusIcon';
 import plusIcon from '../../icon/PlusIcon';
 import amenities from '../sections/Amenties';
 import switchBtn from '../elements/SwitchBtn';
 import carIcon from '../../icon/CarIcon'
 import spinner from '../Spinner';
+
+// for test
+import preferences from '../sections/Preferences';
 
 export default {
     name: 'postRide',
@@ -89,10 +95,28 @@ export default {
             bio_count: 0,
             text_counter: 150,
             tripData: null,
-            usage: 1,
             postFlag: false,
-            latestTripId: 0
-        }
+            latestTripId: 0,
+            genderFlag: false,
+            preferences: {
+                is_smoker: 0,
+                pets: 0,
+                luggage: 0,
+                food: 0,
+                speaking: 0,
+                protection: 0
+            },
+            amenities: {
+                wifi: 0,
+                aux: 0,
+                xcomfort: 0,
+                sanitizer: 0,
+                charger: 0,
+                snacks: 0
+            },
+            seat_img: process.env.ROUTE_BASE + 'static/img/seat.png',
+            usage: 1
+        };
     },
     computed: {
         ...mapGetters({
@@ -104,17 +128,29 @@ export default {
     },
     methods: {
         ...mapActions({
-            'createTrip': 'trips/create'
+            'createTrip': 'trips/create',
+            'updateTrip': 'trips/update'
         }),
+        getPreferences: function (Preferences) {
+            for (let i = 0; i < Object.keys(this.preferences).length; i++) {
+                this.preferences[Object.keys(this.preferences)[i]] = Preferences[Object.keys(this.preferences)[i]] ? 1 : 0;
+            }
+        },
+        getAmenities: function (Amenities) {
+            for (let i = 0; i < Object.keys(this.amenities).length; i++) {
+                this.amenities[Object.keys(this.amenities)[i]] = Amenities[Object.keys(this.amenities)[i]] ? 1 : 0;
+            }
+        },
         selectSeat: function (count) {
-            if (count === -1) {
-                if (this.seat_count === 1) {
-                    return;
-                } else {
-                    this.seat_count += -1;
-                }
+            let maxcount = 4;
+            let currentcount = this.seat_count;
+            currentcount += count;
+            if (currentcount > maxcount) {
+                this.seat_count = 1;
+            } else if (currentcount === 0) {
+                this.seat_count = maxcount;
             } else {
-                this.seat_count += 1;
+                this.seat_count = currentcount;
             }
         },
         toggleBtn: function (param) {
@@ -123,19 +159,21 @@ export default {
             } else {
                 this.usage = 1;
             }
+            console.log('usage', this.usage);
         },
         postRide: function () {
-            // save by trip mode
-            if (this.tripData.tripMode === 'Round') {
-                Object.keys(this.tripData.tripTime.time).forEach(value => {
-                    if (value === 'firstTime') {
+            // postRide by rideMode (Ex: Weekly, Specific or Just Once)
+            switch (this.tripData.rideMode) {
+            case 'Weekdays':
+                // save by trip mode
+                if (this.tripData.tripMode === 'Round') {
+                    this.postFlag = true;
+                    this.tripData.days.forEach(async day => {
                         let rideData = {
                             'is_passenger': 0,
-                            'from_town': this.tripData.areas[0].address,
-                            'to_town': this.tripData.areas[1].address,
-                            'trip_date': this.tripData.tripTime.date + ' ' + this.tripData.tripTime.time.firstTime,
                             'total_seats': this.seat_count.toString(),
-                            'friendship_type_id': this.usage,
+                            'friendship_type_id': 2,
+                            'is_female_only': this.usage === 2 ? 1 : 0,
                             'estimated_time': this.tripData.areas[3],
                             'distance': parseFloat(this.tripData.areas[2]),
                             'co2': parseFloat(this.tripData.areas[4]),
@@ -146,27 +184,96 @@ export default {
                             'rating': this.user.positive_ratings + this.user.negative_ratings,
                             'payment': 2,
                             'availability': 'false',
+                            'is_active': 0,
+                            'is_recurring': 1,
+                            'is_smoker': this.preferences['is_smoker'],
+                            'pets': this.preferences['pets'],
+                            'luggage': this.preferences['luggage'],
+                            'food': this.preferences['food'],
+                            'speaking': this.preferences['speaking'],
+                            'protection': this.preferences['protection'],
+                            'sanitizer': this.amenities['sanitizer'],
+                            'xcomfort': this.amenities['xcomfort'],
+                            'aux': this.amenities['aux'],
+                            'wifi': this.amenities['wifi'],
+                            'charger': this.amenities['charger'],
+                            'snacks': this.amenities['snacks'],
+                            'image_url': this.tripData.areas[5],
+                            'trip_type': this.tripData.tripMode,
+                            'from_town': this.tripData.areas[0].address,
+                            'to_town': this.tripData.areas[1].address,
                             'points': [
                                 this.tripData.areas[0], this.tripData.areas[1]
                             ],
-                            'is_active': 0,
-                            'is_recurring': 1
+                            'trip_date': '2022-12-31 ' + day.firstTime,
+                            'days': day.day
                         };
 
-                        console.log('tripData', rideData);
-                        this.postFlag = true;
-                        this.createTrip(rideData).then(trip => {
-                            this.postFlag = false;
-                            this.$router.push({name: 'your-trips'});
-                        }).catch(error => { this.postFlag = false; });
-                    } else {
+                        // create first trip
+                        await this.createTrip(rideData).then(async result => {
+                            // set return trip data
+                            let returnTrip = {
+                                'is_passenger': 0,
+                                'total_seats': this.seat_count.toString(),
+                                'friendship_type_id': 2,
+                                'is_female_only': this.usage === 2 ? 1 : 0,
+                                'estimated_time': this.tripData.areas[3],
+                                'distance': parseFloat(this.tripData.areas[2]),
+                                'co2': parseFloat(this.tripData.areas[4]),
+                                'description': this.write_detail,
+                                'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
+                                'enc_path': '123',
+                                'community': this.user.email,
+                                'rating': this.user.positive_ratings + this.user.negative_ratings,
+                                'payment': 2,
+                                'availability': 'false',
+                                'is_active': 0,
+                                'is_recurring': 1,
+                                'is_smoker': this.preferences['is_smoker'],
+                                'pets': this.preferences['pets'],
+                                'luggage': this.preferences['luggage'],
+                                'food': this.preferences['food'],
+                                'speaking': this.preferences['speaking'],
+                                'protection': this.preferences['protection'],
+                                'sanitizer': this.amenities['sanitizer'],
+                                'xcomfort': this.amenities['xcomfort'],
+                                'aux': this.amenities['aux'],
+                                'wifi': this.amenities['wifi'],
+                                'charger': this.amenities['charger'],
+                                'snacks': this.amenities['snacks'],
+                                'image_url': this.tripData.areas[5],
+                                'trip_type': this.tripData.tripMode,
+                                'from_town': this.tripData.areas[1].address,
+                                'to_town': this.tripData.areas[0].address,
+                                'points': [
+                                    this.tripData.areas[1], this.tripData.areas[0]
+                                ],
+                                'trip_date': '2022-12-31 ' + day.returnTime,
+                                'days': day.day
+                            };
+                            // create retrun trip
+                            await this.createTrip(returnTrip).then(result => {
+                                console.log('success', result);
+                            }).catch(err => {
+                                console.log('err', err);
+                            });
+                        }).catch(err => {
+                            console.log('err', err);
+                        });
+                    });
+
+                    this.postFlag = false;
+                    this.$router.push({name: 'your-trips'});
+                } else {
+                    this.postFlag = true;
+                    this.tripData.days.forEach(async day => {
                         let rideData = {
                             'is_passenger': 0,
                             'from_town': this.tripData.areas[0].address,
                             'to_town': this.tripData.areas[1].address,
-                            'trip_date': this.tripData.tripTime.date + ' ' + this.tripData.tripTime.time.returnTime,
                             'total_seats': this.seat_count.toString(),
-                            'friendship_type_id': this.usage,
+                            'friendship_type_id': 2,
+                            'is_female_only': this.usage === 2 ? 1 : 0,
                             'estimated_time': this.tripData.areas[3],
                             'distance': parseFloat(this.tripData.areas[2]),
                             'co2': parseFloat(this.tripData.areas[4]),
@@ -182,49 +289,353 @@ export default {
                             ],
                             'is_active': 0,
                             'is_recurring': 1,
-                            'parent_trip_id': this.latestTripId + 1,
-                            'return_trip_id': this.latestTripId + 1
+                            'is_smoker': this.preferences['is_smoker'],
+                            'pets': this.preferences['pets'],
+                            'luggage': this.preferences['luggage'],
+                            'food': this.preferences['food'],
+                            'speaking': this.preferences['speaking'],
+                            'protection': this.preferences['protection'],
+                            'sanitizer': this.amenities['sanitizer'],
+                            'xcomfort': this.amenities['xcomfort'],
+                            'aux': this.amenities['aux'],
+                            'wifi': this.amenities['wifi'],
+                            'charger': this.amenities['charger'],
+                            'snacks': this.amenities['snacks'],
+                            'image_url': this.tripData.areas[5],
+                            'trip_type': this.tripData.tripMode,
+                            'trip_date': '2022-12-31 ' + day.singleTime,
+                            'days': day.day
                         };
-                        
-                        console.log('tripData', rideData);
-                        this.postFlag = true;
-                        this.createTrip(rideData).then(trip => {
-                            this.postFlag = false;
-                            this.$router.push({name: 'your-trips'});
-                        }).catch(error => { this.postFlag = false; });
-                    }
-                });
-            } else {
-                let rideData = {
-                    'is_passenger': 0,
-                    'from_town': this.tripData.areas[0].address,
-                    'to_town': this.tripData.areas[1].address,
-                    'trip_date': this.tripData.tripTime.date + ' ' + this.tripData.tripTime.time.time,
-                    'total_seats': this.seat_count.toString(),
-                    'friendship_type_id': this.usage,
-                    'estimated_time': this.tripData.areas[3],
-                    'distance': parseFloat(this.tripData.areas[2]),
-                    'co2': parseFloat(this.tripData.areas[4]),
-                    'description': this.write_detail,
-                    'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
-                    'enc_path': '123',
-                    'community': this.user.email,
-                    'rating': this.user.positive_ratings + this.user.negative_ratings,
-                    'payment': 2,
-                    'availability': 'false',
-                    'points': [
-                        this.tripData.areas[0], this.tripData.areas[1]
-                    ],
-                    'is_active': 0,
-                    'is_recurring': 1
-                };
 
-                console.log('tripData', rideData);
-                this.postFlag = true;
-                this.createTrip(rideData).then(trip => {
+                        // create trip
+                        await this.createTrip(rideData).then(result => {
+                            console.log('success', result);
+                        }).catch(err => {
+                            console.log('err', err);
+                        });
+                    });
+
                     this.postFlag = false;
                     this.$router.push({name: 'your-trips'});
-                }).catch(error => { this.postFlag = false; });
+                }
+                break;
+            case 'Specific':
+                // save by trip mode
+                if (this.tripData.tripMode === 'Round') {
+                    this.postFlag = true;
+                    this.tripData.days.forEach(async day => {
+                        let rideData = {
+                            'is_passenger': 0,
+                            'total_seats': this.seat_count.toString(),
+                            'friendship_type_id': 2,
+                            'is_female_only': this.usage === 2 ? 1 : 0,
+                            'estimated_time': this.tripData.areas[3],
+                            'distance': parseFloat(this.tripData.areas[2]),
+                            'co2': parseFloat(this.tripData.areas[4]),
+                            'description': this.write_detail,
+                            'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
+                            'enc_path': '123',
+                            'community': this.user.email,
+                            'rating': this.user.positive_ratings + this.user.negative_ratings,
+                            'payment': 2,
+                            'availability': 'false',
+                            'is_active': 0,
+                            'is_recurring': 1,
+                            'is_smoker': this.preferences['is_smoker'],
+                            'pets': this.preferences['pets'],
+                            'luggage': this.preferences['luggage'],
+                            'food': this.preferences['food'],
+                            'speaking': this.preferences['speaking'],
+                            'protection': this.preferences['protection'],
+                            'sanitizer': this.amenities['sanitizer'],
+                            'xcomfort': this.amenities['xcomfort'],
+                            'aux': this.amenities['aux'],
+                            'wifi': this.amenities['wifi'],
+                            'charger': this.amenities['charger'],
+                            'snacks': this.amenities['snacks'],
+                            'image_url': this.tripData.areas[5],
+                            'trip_type': this.tripData.tripMode,
+                            'from_town': this.tripData.areas[0].address,
+                            'to_town': this.tripData.areas[1].address,
+                            'points': [
+                                this.tripData.areas[0], this.tripData.areas[1]
+                            ],
+                            'trip_date': day.realDay + ' ' + day.firstTime
+                        };
+
+                        // create first trip
+                        await this.createTrip(rideData).then(async result => {
+                            // set return trip data
+                            let returnTrip = {
+                                'is_passenger': 0,
+                                'total_seats': this.seat_count.toString(),
+                                'friendship_type_id': 2,
+                                'is_female_only': this.usage === 2 ? 1 : 0,
+                                'estimated_time': this.tripData.areas[3],
+                                'distance': parseFloat(this.tripData.areas[2]),
+                                'co2': parseFloat(this.tripData.areas[4]),
+                                'description': this.write_detail,
+                                'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
+                                'enc_path': '123',
+                                'community': this.user.email,
+                                'rating': this.user.positive_ratings + this.user.negative_ratings,
+                                'payment': 2,
+                                'availability': 'false',
+                                'is_active': 0,
+                                'is_recurring': 1,
+                                'is_smoker': this.preferences['is_smoker'],
+                                'pets': this.preferences['pets'],
+                                'luggage': this.preferences['luggage'],
+                                'food': this.preferences['food'],
+                                'speaking': this.preferences['speaking'],
+                                'protection': this.preferences['protection'],
+                                'sanitizer': this.amenities['sanitizer'],
+                                'xcomfort': this.amenities['xcomfort'],
+                                'aux': this.amenities['aux'],
+                                'wifi': this.amenities['wifi'],
+                                'charger': this.amenities['charger'],
+                                'snacks': this.amenities['snacks'],
+                                'image_url': this.tripData.areas[5],
+                                'trip_type': this.tripData.tripMode,
+                                'from_town': this.tripData.areas[1].address,
+                                'to_town': this.tripData.areas[0].address,
+                                'points': [
+                                    this.tripData.areas[1], this.tripData.areas[0]
+                                ],
+                                'trip_date': day.realDay + ' ' + day.returnTime
+                            };
+                            // create retrun trip
+                            await this.createTrip(returnTrip).then(result => {
+                                console.log('success', result);
+                            }).catch(err => {
+                                console.log('err', err);
+                            });
+                        }).catch(err => {
+                            console.log('err', err);
+                        });
+                    });
+
+                    this.postFlag = false;
+                    this.$router.push({name: 'your-trips'});
+                } else {
+                    this.postFlag = true;
+                    this.tripData.days.forEach(async day => {
+                        let rideData = {
+                            'is_passenger': 0,
+                            'from_town': this.tripData.areas[0].address,
+                            'to_town': this.tripData.areas[1].address,
+                            'total_seats': this.seat_count.toString(),
+                            'friendship_type_id': 2,
+                            'is_female_only': this.usage === 2 ? 1 : 0,
+                            'estimated_time': this.tripData.areas[3],
+                            'distance': parseFloat(this.tripData.areas[2]),
+                            'co2': parseFloat(this.tripData.areas[4]),
+                            'description': this.write_detail,
+                            'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
+                            'enc_path': '123',
+                            'community': this.user.email,
+                            'rating': this.user.positive_ratings + this.user.negative_ratings,
+                            'payment': 2,
+                            'availability': 'false',
+                            'points': [
+                                this.tripData.areas[0], this.tripData.areas[1]
+                            ],
+                            'is_active': 0,
+                            'is_recurring': 1,
+                            'is_smoker': this.preferences['is_smoker'],
+                            'pets': this.preferences['pets'],
+                            'luggage': this.preferences['luggage'],
+                            'food': this.preferences['food'],
+                            'speaking': this.preferences['speaking'],
+                            'protection': this.preferences['protection'],
+                            'sanitizer': this.amenities['sanitizer'],
+                            'xcomfort': this.amenities['xcomfort'],
+                            'aux': this.amenities['aux'],
+                            'wifi': this.amenities['wifi'],
+                            'charger': this.amenities['charger'],
+                            'snacks': this.amenities['snacks'],
+                            'image_url': this.tripData.areas[5],
+                            'trip_type': this.tripData.tripMode,
+                            'trip_date': day.realDay + ' ' + day.singleTime
+                        };
+
+                        // create trip
+                        await this.createTrip(rideData).then(result => {
+                            console.log('success', result);
+                        }).catch(err => {
+                            console.log('err', err);
+                        });
+                    });
+
+                    this.postFlag = false;
+                    this.$router.push({name: 'your-trips'});
+                }
+                break;
+            case 'Once':
+                // save by trip mode
+                if (this.tripData.tripMode === 'Round') {
+                    console.log('test', this.tripData);
+                    let rideData = {
+                        'is_passenger': 0,
+                        'from_town': this.tripData.areas[0].address,
+                        'to_town': this.tripData.areas[1].address,
+                        'trip_date': this.tripData.tripTime.date + ' ' + this.tripData.tripTime.time.firstTime,
+                        'total_seats': this.seat_count.toString(),
+                        'friendship_type_id': 2,
+                        'is_female_only': this.usage === 2 ? 1 : 0,
+                        'estimated_time': this.tripData.areas[3],
+                        'distance': parseFloat(this.tripData.areas[2]),
+                        'co2': parseFloat(this.tripData.areas[4]),
+                        'description': this.write_detail,
+                        'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
+                        'enc_path': '123',
+                        'community': this.user.email,
+                        'rating': this.user.positive_ratings + this.user.negative_ratings,
+                        'payment': 2,
+                        'availability': 'false',
+                        'points': [
+                            this.tripData.areas[0], this.tripData.areas[1]
+                        ],
+                        'is_active': 0,
+                        'is_recurring': 1,
+                        'is_smoker': this.preferences['is_smoker'],
+                        'pets': this.preferences['pets'],
+                        'luggage': this.preferences['luggage'],
+                        'food': this.preferences['food'],
+                        'speaking': this.preferences['speaking'],
+                        'protection': this.preferences['protection'],
+                        'sanitizer': this.amenities['sanitizer'],
+                        'xcomfort': this.amenities['xcomfort'],
+                        'aux': this.amenities['aux'],
+                        'wifi': this.amenities['wifi'],
+                        'charger': this.amenities['charger'],
+                        'snacks': this.amenities['snacks'],
+                        'image_url': this.tripData.areas[5],
+                        'trip_type': this.tripData.tripMode
+                    };
+
+                    console.log('tripData', rideData);
+                    this.postFlag = true;
+                    this.createTrip(rideData).then(trip => {
+                        console.log('createdTrip', trip);
+                        let returnTrip = {
+                            'is_passenger': 0,
+                            'from_town': this.tripData.areas[1].address,
+                            'to_town': this.tripData.areas[0].address,
+                            'trip_date': this.tripData.tripTime.date + ' ' + this.tripData.tripTime.time.returnTime,
+                            'total_seats': this.seat_count.toString(),
+                            'friendship_type_id': 2,
+                            'is_female_only': this.usage === 2 ? 1 : 0,
+                            'estimated_time': this.tripData.areas[3],
+                            'distance': parseFloat(this.tripData.areas[2]),
+                            'co2': parseFloat(this.tripData.areas[4]),
+                            'description': this.write_detail,
+                            'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
+                            'enc_path': '123',
+                            'community': this.user.email,
+                            'rating': this.user.positive_ratings + this.user.negative_ratings,
+                            'payment': 2,
+                            'availability': 'false',
+                            'points': [
+                                this.tripData.areas[1], this.tripData.areas[0]
+                            ],
+                            'is_active': 0,
+                            'is_recurring': 1,
+                            'is_smoker': this.preferences['is_smoker'],
+                            'pets': this.preferences['pets'],
+                            'luggage': this.preferences['luggage'],
+                            'food': this.preferences['food'],
+                            'speaking': this.preferences['speaking'],
+                            'protection': this.preferences['protection'],
+                            'sanitizer': this.amenities['sanitizer'],
+                            'xcomfort': this.amenities['xcomfort'],
+                            'aux': this.amenities['aux'],
+                            'wifi': this.amenities['wifi'],
+                            'charger': this.amenities['charger'],
+                            'snacks': this.amenities['snacks'],
+                            'image_url': this.tripData.areas[5],
+                            'parent_trip_id': trip.id,
+                            'trip_type': this.tripData.tripMode
+                        };
+
+                        // create retrun trip
+                        this.createTrip(returnTrip).then(result => {
+                            console.log('success', result);
+                        }).catch(err => {
+                            console.log('err', err);
+                        });
+
+                        let updateTrip = trip;
+                        updateTrip['return_trip_id'] = trip.id + 1;
+                        if (updateTrip.is_passenger) {
+                            updateTrip.is_passenger = 1;
+                        } else {
+                            updateTrip.is_passenger = 0;
+                        }
+                        updateTrip.payment = updateTrip.payment.toString();
+                        updateTrip.image_url = this.tripData.areas[5];
+
+                        // update first trip
+                        this.updateTrip(updateTrip).then(result => {
+                            console.log('success', result);
+                        }).catch(err => {
+                            console.log('err', err);
+                        });
+                        this.postFlag = false;
+                        this.$router.push({name: 'your-trips'});
+                    }).catch(error => { this.postFlag = false; });
+                } else {
+                    console.log('changedata', this.tripData);
+                    let rideData = {
+                        'is_passenger': 0,
+                        'from_town': this.tripData.areas[0].address,
+                        'to_town': this.tripData.areas[1].address,
+                        'trip_date': this.tripData.tripTime.date + ' ' + this.tripData.tripTime.time.time,
+                        'total_seats': this.seat_count.toString(),
+                        'friendship_type_id': 2,
+                        'is_female_only': this.usage === 2 ? 1 : 0,
+                        'estimated_time': this.tripData.areas[3],
+                        'distance': parseFloat(this.tripData.areas[2]),
+                        'co2': parseFloat(this.tripData.areas[4]),
+                        'description': this.write_detail,
+                        'car_id': this.cars.length > 0 ? this.cars[0].id : undefined,
+                        'enc_path': '123',
+                        'community': this.user.email,
+                        'rating': this.user.positive_ratings + this.user.negative_ratings,
+                        'payment': 2,
+                        'points': [
+                            this.tripData.areas[0], this.tripData.areas[1]
+                        ],
+                        'availability': 'false',
+                        'is_active': 0,
+                        'is_recurring': 1,
+                        'is_smoker': this.preferences['is_smoker'],
+                        'pets': this.preferences['pets'],
+                        'luggage': this.preferences['luggage'],
+                        'food': this.preferences['food'],
+                        'speaking': this.preferences['speaking'],
+                        'protection': this.preferences['protection'],
+                        'sanitizer': this.amenities['sanitizer'],
+                        'xcomfort': this.amenities['xcomfort'],
+                        'aux': this.amenities['aux'],
+                        'wifi': this.amenities['wifi'],
+                        'charger': this.amenities['charger'],
+                        'snacks': this.amenities['snacks'],
+                        'image_url': this.tripData.areas[5],
+                        'trip_type': this.tripData.tripMode
+                    };
+
+                    console.log('tripData', rideData);
+                    this.postFlag = true;
+                    this.createTrip(rideData).then(trip => {
+                        this.postFlag = false;
+                        console.log('postedTrip', trip);
+                        this.$router.push({name: 'your-trips'});
+                    }).catch(error => { this.postFlag = false; });
+                }
+                break;
+            default:
+                break;
             }
         }
     },
@@ -245,23 +656,26 @@ export default {
     },
     components: {
         closeIcon,
-        carPlusIcon,
         minusIcon,
         plusIcon,
-        greySeatIcon,
         amenities,
         switchBtn,
         spinner,
-        carIcon
+        carIcon,
+        preferences
     },
     mounted () {
         console.log('data', this.data);
-        console.log('trips', this.trips);
+        console.log('image_length', this.data.areas[5].length);
         console.log('user', this.user);
-        this.tripData = this.data;
 
-        // set latest trip ID
-        this.latestTripId = this.trips[this.trips.length - 1].id;
+        // set for male or female
+        if (this.user.gender === 'male') {
+            this.genderFlag = true;
+        } else {
+            this.genderFlag = false;
+        }
+        this.tripData = this.data;
     },
     props: {
         data: {

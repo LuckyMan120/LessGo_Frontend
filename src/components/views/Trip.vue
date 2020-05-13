@@ -560,7 +560,7 @@ import moment from 'moment';
 import dialogs from '../../services/dialogs.js';
 import bubble from '../views/BubbleComponent.vue';
 import ticket from '../views/ProfileTicket.vue';
-import carIcon from '../../icon/carIcon';
+import carIcon from '../../icon/CarIcon';
 import ProfileCard from '../views/ProfileCard';
 
 import Vue from 'vue';

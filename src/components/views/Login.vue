@@ -263,7 +263,7 @@ label {
 }
 
 .alert-warning {
-  background-color: #ec5355;
+  background-color: #eb5557;
   border-color: #fff;
   color: #ffffff;
   position: fixed;

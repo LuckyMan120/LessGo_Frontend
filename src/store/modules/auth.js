@@ -13,7 +13,11 @@ const state = {
     user: null,
     token: null,
     firstTime: false,
-    appConfig: null
+    appConfig: null,
+    users: null,
+    singupData: null,
+    searchUser: null,
+    localstoreData: null
 };
 
 // getters
@@ -22,7 +26,11 @@ const getters = {
     authHeader: state => state.auth ? { 'Authorization': 'Bearer ' + state.token } : {},
     user: state => state.user,
     firstTime: state => state.firstTime,
-    appConfig: state => state.appConfig
+    appConfig: state => state.appConfig,
+    users: state => state.users,
+    singupData: state => state.singupData,
+    searchUser: state => state.searchUser,
+    getLocalStore: state => state.localstoreData
 };
 
 // actions
@@ -82,6 +90,11 @@ function activate (store, activationToken) {
     });
 }
 
+// get signup data for activate
+function getSignupFromLocal (store) {
+    store.commit(types.GET_LOCAL_DATA);
+}
+
 function resetPassword (store, email) {
     return authApi.resetPassword({email}).then(() => {
         return Promise.resolve();
@@ -116,6 +129,7 @@ function register (store, { gender, active, mobile, email, password, passwordCon
     data.mobile_phone = mobile;
 
     return userApi.register(data).then((data) => {
+        store.commit(types.SAVE_TO_LOCAL_STORAGE, data);
         return Promise.resolve();
     }).catch((err) => {
         if (err.response) {
@@ -132,6 +146,14 @@ function fetchUser (store) {
     return userApi.show().then((response) => {
         console.log('fetch user', response.data);
         store.commit(types.AUTH_SET_USER, response.data);
+    }).catch(({data, status}) => {
+        console.log(data, status);
+    });
+}
+
+function searchUser (store, id) {
+    return userApi.show(id).then((response) => {
+        store.commit(types.SEARCH_USER, response.data);
     }).catch(({data, status}) => {
         console.log(data, status);
     });
@@ -189,6 +211,24 @@ function updatePhoto (store, data) {
     });
 }
 
+function getAllUsers (store) {
+    return userApi.list().then((response) => {
+        console.log('otherUsers', response.data);
+        response.data.forEach(user => {
+            globalStore.dispatch('userTrips/tripAsDriver', user.id);
+        });
+        store.commit(types.SAVE_ALL_USERS, response.data);
+        return Promise.resolve(response.data);
+    }).catch(({data, status}) => {
+        console.log(data, status);
+        return Promise.reject(data);
+    });
+}
+
+function saveSignupData (store, data) {
+    store.commit(types.SAVE_SIGNUP_DATA, data);
+}
+
 const actions = {
     login,
     activate,
@@ -200,7 +240,11 @@ const actions = {
     changePassword,
     update,
     updatePhoto,
-    onLoggin
+    onLoggin,
+    getAllUsers,
+    searchUser,
+    saveSignupData,
+    getSignupFromLocal
 };
 
 // mutations
@@ -238,6 +282,29 @@ const mutations = {
             }
             state.user.donations.push(donation);
         }
+    },
+
+    [types.SAVE_ALL_USERS] (state, users) {
+        state.users = users;
+    },
+
+    [types.SAVE_SIGNUP_DATA] (state, data) {
+        state.singupData = data;
+    },
+
+    [types.SEARCH_USER] (state, data) {
+        state.searchUser = data;
+    },
+
+    [types.SAVE_TO_LOCAL_STORAGE] (state, data) {
+        console.log('-----cache', data);
+        cache.setItem(keys.SIGNUP_KEY, data);
+    },
+
+    [types.GET_LOCAL_DATA] (state) {
+        let data = cache.getItem(keys.SIGNUP_KEY);
+        console.log('----------GetItem', data);
+        state.localstoreData = data;
     }
 };
 

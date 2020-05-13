@@ -22,6 +22,10 @@ export const init = (store) => {
         {
             key: keys.DEVICE_KEY,
             mutation: 'device/' + types.DEVICE_SET_CURRENT_DEVICE
+        },
+        {
+            key: keys.SIGNUP_KEY,
+            mutation: 'auth' + types.GET_LOCAL_DATA
         }
     ];
 

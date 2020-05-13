@@ -4,19 +4,19 @@
       <div class="modal-wrapper">
         <div class="modal-container">
 
-          <div class="modal-header">
+          <!-- <div class="modal-header">
             <slot name="header"></slot>
-          </div>
+          </div> -->
 
           <div class="modal-body">
             <slot name="body"></slot>
           </div>
 
-          <div class="modal-footer" v-if="!hideFooter">
+          <!-- <div class="modal-footer" v-if="!hideFooter">
             <slot name="footer">
               <button class="modal-default-button btn btn-link" @click="$emit('close')">Close</button>
             </slot>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -66,7 +66,7 @@ export default {
         margin: 0px auto;
         padding: 0%;
         background-color: #fff;
-        border-radius: 2px;
+        border-radius: 15px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
         transition: all .3s ease;
         color: #333333;

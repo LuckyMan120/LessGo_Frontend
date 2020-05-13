@@ -105,4 +105,11 @@ export const INIT_DETAIL = 'INIT_DETAIL';
 export const RESERVE_FLAG = 'RESERVE_FLAG';
 export const SET_TRIPS = 'SET_TRIPS';
 export const SET_SELECTED_TRIP = 'SET_SELECTED_TRIP';
+export const SAVE_ALL_USERS = 'SAVE_ALL_USERS';
+export const DELETE_ALL_TRIPS = 'DELETE_ALL_TRIPS';
+export const SET_ALL_CARS = 'SET_ALL_CARS';
+export const SAVE_SIGNUP_DATA = 'SAVE_SIGNUP_DATA';
+export const SEARCH_USER = 'SEARCH_USER';
+export const SAVE_TO_LOCAL_STORAGE = 'SAVE_TO_LOCAL_STORAGE';
+export const GET_LOCAL_DATA = 'GET_LOCAL_DATA';
 

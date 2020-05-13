@@ -1,7 +1,7 @@
 <template>
     <div class="details-body-common">
         <!-- smoking -->
-        <div @click="selPreference('smoke')" :style="(offerFlag && !smoke)?'opacity: .5' : ''" class="details-body-common-area">
+        <div @click="selPreference('is_smoker')" :style="(offerFlag && !is_smoker)?'opacity: .5' : ''" class="details-body-common-area">
             <div class="amenties-img" :style="{'background': 'url(' + smokeIcon + ')'}"></div>
             <p>Smoking</p>
         </div>
@@ -25,15 +25,22 @@
         </div>
 
         <!-- speak -->
-        <div @click="selPreference('speak')" :style="(offerFlag && !speak)?'opacity: .5' : ''" class="details-body-common-area">
+        <div @click="selPreference('speaking')" :style="(offerFlag && !speaking)?'opacity: .5' : ''" class="details-body-common-area">
             <div class="amenties-img" :style="{'background': 'url(' + speakIcon + ')'}"></div>
             <p>Speaking</p>
         </div>
 
         <!-- protection -->
-        <div @click="selPreference('protect')" :style="(offerFlag && !protect)?'opacity: .5' : ''" class="details-body-common-area">
-            <div class="amenties-img" :style="{'background': 'url(' + protectIcon + ')'}"></div>
-            <p>Protection</p>
+        <div v-if="reverse">
+            <div @click="selPreference('protection')" :style="(offerFlag && !protection)?'opacity: .5' : ''" class="details-body-common-area">
+                <div class="amenties-img" :style="{'background': 'url(' + protectIcon + ')'}"></div>
+                <p>Protection</p>
+            </div>
+        </div>
+
+        <!-- arrow icon -->
+        <div :style="reverse?'transform: rotate(180deg)': ''" class="amen-arrow" @click="reverseBtn">
+            <v-icon icon="angle-down" />
         </div>
     </div>
 </template>
@@ -43,19 +50,20 @@ export default {
     name: 'preferences',
     data () {
         return {
-            smoke: false,
+            reverse: false,
+            is_smoker: false,
             pets: false,
             food: false,
-            speak: false,
+            speaking: false,
             luggage: false,
-            protect: false,
+            protection: false,
             smokeIcon: process.env.ROUTE_BASE + 'static/img/smoke.png',
             petsIcon: process.env.ROUTE_BASE + 'static/img/pets.png',
             luggageIcon: process.env.ROUTE_BASE + 'static/img/luggage.png',
             foodIcon: process.env.ROUTE_BASE + 'static/img/food.png',
             speakIcon: process.env.ROUTE_BASE + 'static/img/speaking.png',
             protectIcon: process.env.ROUTE_BASE + 'static/img/protection.png'
-        }
+        };
     },
     props: {
         data: {
@@ -72,33 +80,46 @@ export default {
     mounted () {
         this.data.forEach(item => {
             switch (item) {
-                case 'Smoking':
-                    this.smoke = true;
-                    break;
-                case 'Pets':
-                    this.pets = true;
-                    break;
-                case 'Food':
-                    this.food = true;
-                    break;
-                case 'Luggage':
-                    this.luggage = true;
-                    break;
-                case 'Speaking':
-                    this.speak = true;
-                    break;
-                case 'Protection':
-                    this.protect = true;
-                    break;
-                default:
-                    break;
+            case 'is_smoker':
+                this.is_smoker = true;
+                break;
+            case 'pets':
+                this.pets = true;
+                break;
+            case 'food':
+                this.food = true;
+                break;
+            case 'luggage':
+                this.luggage = true;
+                break;
+            case 'speaking':
+                this.speaking = true;
+                break;
+            case 'protection':
+                this.protection = true;
+                break;
+            default:
+                break;
             }
         });
     },
     methods: {
         selPreference: function (item) {
             this[item] = !this[item];
+
+            let data = {
+                is_smoker: this.is_smoker,
+                pets: this.pets,
+                luggage: this.luggage,
+                food: this.food,
+                speaking: this.speaking,
+                protection: this.protection
+            };
+            this.$emit('preference', data);
+        },
+        reverseBtn: function () {
+            this.reverse = !this.reverse;
         }
     }
-}
+};
 </script>
